@@ -73,6 +73,15 @@ export default function DividendAnalytics({
 
   const locale = currencyLocales[currency] || "en-US";
 
+  // Yahoo Finance returns dividend_yield and five_year_avg_dividend_yield
+  // BOTH as percentage values (e.g., 4.24 = 4.24%), not decimals
+  // So we display them directly without multiplying by 100
+  const formatDividendPercent = (val: number | null) => {
+    if (val === null || val === undefined) return "—";
+    return `${val.toFixed(2)}%`;
+  };
+
+  // For payout_ratio, Yahoo Finance returns it as a decimal (0.50 = 50%)
   const formatPercent = (val: number | null) => {
     if (val === null || val === undefined) return "—";
     return `${(val * 100).toFixed(2)}%`;
@@ -90,6 +99,7 @@ export default function DividendAnalytics({
   const payoutHealth = getPayoutHealth(data.payout_ratio);
 
   // Calculate comparison to 5-year average
+  // Both values are already in percentage format (e.g., 4.24 = 4.24%)
   const yieldComparison = (() => {
     if (
       data.dividend_yield === null ||
@@ -130,10 +140,10 @@ export default function DividendAnalytics({
             )}
           </div>
           <div className="text-2xl font-bold text-emerald-400">
-            {formatPercent(data.dividend_yield)}
+            {formatDividendPercent(data.dividend_yield)}
           </div>
           <div className="text-xs text-muted-foreground">
-            5Y Avg: {formatPercent(data.five_year_avg_dividend_yield)}
+            5Y Avg: {formatDividendPercent(data.five_year_avg_dividend_yield)}
           </div>
 
           {/* Comparison visual */}
@@ -144,14 +154,14 @@ export default function DividendAnalytics({
                 <div
                   className="absolute top-0 bottom-0 w-0.5 bg-white/50"
                   style={{
-                    left: `${Math.min(90, (data.five_year_avg_dividend_yield / 0.1) * 100)}%`,
+                    left: `${Math.min(90, (data.five_year_avg_dividend_yield / 10) * 100)}%`,
                   }}
                 />
                 {/* Current yield bar */}
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
                   style={{
-                    width: `${Math.min(100, (data.dividend_yield / 0.1) * 100)}%`,
+                    width: `${Math.min(100, (data.dividend_yield / 10) * 100)}%`,
                   }}
                 />
               </div>
