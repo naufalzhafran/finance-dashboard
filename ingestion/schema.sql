@@ -56,6 +56,11 @@ CREATE TABLE IF NOT EXISTS fundamentals (
     operating_cashflow REAL,
     trailing_eps REAL,
     forward_eps REAL,
+    price_to_sales REAL,
+    dividend_yield REAL,
+    dividend_rate REAL,
+    payout_ratio REAL,
+    five_year_avg_dividend_yield REAL,
     FOREIGN KEY (asset_id) REFERENCES assets(id),
     UNIQUE(asset_id, date)
 );

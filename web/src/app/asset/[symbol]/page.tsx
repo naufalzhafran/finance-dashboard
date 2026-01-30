@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import StockChart from "@/components/StockChart";
 import DashboardControls from "@/components/DashboardControls";
 import FundamentalsGrid from "@/components/FundamentalsGrid";
+import ValuationRatios from "@/components/ValuationRatios";
+import DividendAnalytics from "@/components/DividendAnalytics";
+import EPSTrendChart from "@/components/EPSTrendChart";
 import FinancialsView from "@/components/FinancialsView";
 import TechnicalIndicators from "@/components/TechnicalIndicators";
 import RSIChart from "@/components/RSIChart";
@@ -527,10 +530,31 @@ export default function AssetDetail({
 
           {/* Fundamentals Section */}
           {selectedSymbol && (
-            <div className="animate-fade-in">
+            <div className="animate-fade-in space-y-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Fundamentals</h2>
               </div>
+
+              {/* Fair Value Tracker */}
+              <ValuationRatios
+                data={fundamentals}
+                loading={fundamentalsLoading}
+              />
+
+              {/* Dividend Analytics */}
+              <DividendAnalytics
+                data={fundamentals}
+                loading={fundamentalsLoading}
+                currency={selectedAsset?.currency}
+              />
+
+              {/* EPS Trend Chart */}
+              <EPSTrendChart
+                symbol={selectedSymbol}
+                currency={selectedAsset?.currency}
+              />
+
+              {/* Original Fundamentals Grid */}
               <FundamentalsGrid
                 data={fundamentals}
                 loading={fundamentalsLoading}

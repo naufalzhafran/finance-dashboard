@@ -2,12 +2,12 @@
 """
 Indonesian Stock Exchange (IDX) Data Ingestion Script
 
-Fetches 5 years of historical stock data for all Indonesian stocks from Yahoo Finance
+Fetches historical stock data for all Indonesian stocks from Yahoo Finance
 and stores it in a local SQLite database.
 
 Usage:
-    python ingest_idx.py                    # Fetch all IDX stocks (5 years)
-    python ingest_idx.py --years 3          # Fetch 3 years of data
+    python ingest_idx.py                    # Fetch all IDX stocks (10 years)
+    python ingest_idx.py --years 5          # Fetch 5 years of data
     python ingest_idx.py --limit 10         # Fetch only first 10 stocks (for testing)
     python ingest_idx.py --symbols BBCA BBRI BMRI  # Fetch specific stocks only
 """
@@ -334,6 +334,12 @@ def fetch_and_store_fundamentals(conn: sqlite3.Connection, symbol: str, ticker: 
             "operating_cashflow": info.get("operatingCashflow"),
             "trailing_eps": info.get("trailingEps"),
             "forward_eps": info.get("forwardEps"),
+            # New dividend and valuation fields
+            "price_to_sales": info.get("priceToSalesTrailing12Months"),
+            "dividend_yield": info.get("dividendYield"),
+            "dividend_rate": info.get("dividendRate"),
+            "payout_ratio": info.get("payoutRatio"),
+            "five_year_avg_dividend_yield": info.get("fiveYearAvgDividendYield"),
         }
         
         # Current date for snapshot
@@ -347,8 +353,9 @@ def fetch_and_store_fundamentals(conn: sqlite3.Connection, symbol: str, ticker: 
              peg_ratio, price_to_book, profit_margins, operating_margins, 
              return_on_assets, return_on_equity, revenue_growth, earnings_growth, 
              debt_to_equity, total_cash, total_debt, total_revenue, gross_profits, 
-             free_cashflow, operating_cashflow, trailing_eps, forward_eps)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             free_cashflow, operating_cashflow, trailing_eps, forward_eps,
+             price_to_sales, dividend_yield, dividend_rate, payout_ratio, five_year_avg_dividend_yield)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 asset_id, today,
@@ -358,7 +365,9 @@ def fetch_and_store_fundamentals(conn: sqlite3.Connection, symbol: str, ticker: 
                 metrics["return_on_equity"], metrics["revenue_growth"], metrics["earnings_growth"],
                 metrics["debt_to_equity"], metrics["total_cash"], metrics["total_debt"],
                 metrics["total_revenue"], metrics["gross_profits"], metrics["free_cashflow"],
-                metrics["operating_cashflow"], metrics["trailing_eps"], metrics["forward_eps"]
+                metrics["operating_cashflow"], metrics["trailing_eps"], metrics["forward_eps"],
+                metrics["price_to_sales"], metrics["dividend_yield"], metrics["dividend_rate"],
+                metrics["payout_ratio"], metrics["five_year_avg_dividend_yield"]
             )
         )
         conn.commit()
@@ -545,8 +554,8 @@ def main():
     parser.add_argument(
         "--years",
         type=int,
-        default=5,
-        help="Number of years of history to fetch (default: 5)"
+        default=10,
+        help="Number of years of history to fetch (default: 10)"
     )
     parser.add_argument(
         "--start",
@@ -603,3 +612,6 @@ def main():
 
     run(start_date, end_date, symbols, args.delay)
 
+
+if __name__ == "__main__":
+    main()

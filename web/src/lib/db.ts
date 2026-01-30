@@ -59,6 +59,11 @@ export interface FundamentalData {
   operating_cashflow: number | null;
   trailing_eps: number | null;
   forward_eps: number | null;
+  price_to_sales: number | null;
+  dividend_yield: number | null;
+  dividend_rate: number | null;
+  payout_ratio: number | null;
+  five_year_avg_dividend_yield: number | null;
 }
 
 export interface FinancialsIncome {

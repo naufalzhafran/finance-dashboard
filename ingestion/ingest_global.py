@@ -11,8 +11,8 @@ Fetches global market data including:
 Uses Yahoo Finance API and stores data in the local SQLite database.
 
 Usage:
-    python ingest_global.py                 # Fetch all global assets (5 years)
-    python ingest_global.py --years 3       # Fetch 3 years of data
+    python ingest_global.py                 # Fetch all global assets (10 years)
+    python ingest_global.py --years 5       # Fetch 5 years of data
     python ingest_global.py --symbols ^GSPC BTC-USD  # Fetch specific symbols
 """
 
@@ -43,7 +43,6 @@ GLOBAL_ASSETS = {
     "EURIDR=X": {"name": "EUR/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
     "GBPIDR=X": {"name": "GBP/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
     "JPYIDR=X": {"name": "JPY/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
-    "CNYIDR=X": {"name": "CNY/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
     "SGDIDR=X": {"name": "SGD/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
     "AUDIDR=X": {"name": "AUD/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
     "HKDIDR=X": {"name": "HKD/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
@@ -53,7 +52,6 @@ GLOBAL_ASSETS = {
     "KRWIDR=X": {"name": "KRW/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
     "MYRIDR=X": {"name": "MYR/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
     "THBIDR=X": {"name": "THB/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
-    "INRIDR=X": {"name": "INR/IDR Exchange Rate", "type": "currency", "currency": "IDR"},
     
     # ==================== COMMODITIES ====================
     # Precious Metals
@@ -323,8 +321,8 @@ def main():
     parser.add_argument(
         "--years",
         type=int,
-        default=5,
-        help="Number of years of history to fetch (default: 5)"
+        default=10,
+        help="Number of years of history to fetch (default: 10)"
     )
     parser.add_argument(
         "--start",
