@@ -15,6 +15,8 @@ import MACDChart from "@/components/MACDChart";
 import RiskAnalytics from "@/components/RiskAnalytics";
 import VolatilityChart from "@/components/VolatilityChart";
 import DrawdownChart from "@/components/DrawdownChart";
+import StrategyCard from "@/components/StrategyCard";
+import { analyzeStock } from "@/lib/strategy";
 import { Asset } from "@/types";
 import { FundamentalData } from "@/lib/db";
 import { Card } from "@/components/ui/card";
@@ -265,6 +267,11 @@ export default function AssetDetail({
     };
   }, [priceData, technicalData, minDate]);
 
+  // Calculate Strategy
+  const strategyResult = useMemo(() => {
+    return analyzeStock(priceData, fundamentals);
+  }, [priceData, fundamentals]);
+
   // Fetch assets on mount
   useEffect(() => {
     async function fetchAssets() {
@@ -457,6 +464,16 @@ export default function AssetDetail({
               </Card>
             )}
           </div>
+
+          {/* Strategy Section */}
+          {selectedSymbol && !loading && (
+            <div className="animate-fade-in">
+              <StrategyCard
+                analysis={strategyResult}
+                loading={priceLoading || fundamentalsLoading}
+              />
+            </div>
+          )}
 
           {/* Technical Indicators Section */}
           {selectedSymbol && !priceLoading && priceData.length > 0 && (
