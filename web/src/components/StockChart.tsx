@@ -11,9 +11,16 @@ import {
   AreaChart,
   ComposedChart,
   Bar,
+  ErrorBar,
+  Rectangle,
 } from "recharts";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  calculateSMA,
+  calculateBollingerBands,
+} from "@/lib/technicalIndicators";
+import { InfoTooltip, INDICATOR_HELP } from "@/components/InfoTooltip";
 
 interface PriceData {
   date: string;
@@ -24,20 +31,22 @@ interface PriceData {
   volume: number;
 }
 
-function calculateSMA(data: PriceData[], period: number): (number | null)[] {
-  const smaValues: (number | null)[] = [];
-  for (let i = 0; i < data.length; i++) {
-    if (i < period - 1) {
-      smaValues.push(null);
-      continue;
-    }
-    const sum = data
-      .slice(i - period + 1, i + 1)
-      .reduce((acc, curr) => acc + curr.close, 0);
-    smaValues.push(sum / period);
-  }
-  return smaValues;
-}
+// Candlestick dataKey functions
+const candlestickBodyDataKey = (entry: any): [number, number] => [
+  Math.min(entry.close, entry.open),
+  Math.max(entry.close, entry.open),
+];
+
+const candlestickWhiskerDataKey = (entry: any): [number, number] => {
+  const highEnd = Math.max(entry.close, entry.open);
+  return [highEnd - entry.low, entry.high - highEnd];
+};
+
+// Candlestick shape component
+const Candlestick = (props: any) => {
+  const color = props.open < props.close ? "#10b981" : "#f43f5e";
+  return <Rectangle {...props} fill={color} />;
+};
 
 interface StockChartProps {
   data: PriceData[];
@@ -66,6 +75,9 @@ export default function StockChart({
   minDate,
 }: StockChartProps) {
   const [chartType, setChartType] = useState<ChartType>("area");
+  const [showBollinger, setShowBollinger] = useState(true);
+  const [showSMA50, setShowSMA50] = useState(true);
+  const [showSMA200, setShowSMA200] = useState(true);
 
   if (data.length === 0) {
     return (
@@ -75,9 +87,12 @@ export default function StockChart({
     );
   }
 
-  // Calculate SMAs
-  const sma20 = calculateSMA(data, 20);
+  // Calculate SMAs (50 and 200 day for Golden Cross detection)
   const sma50 = calculateSMA(data, 50);
+  const sma200 = calculateSMA(data, 200);
+
+  // Calculate Bollinger Bands (20-day with 2 std dev)
+  const bollinger = calculateBollingerBands(data, 20, 2);
 
   // Format data for charts
   const chartData = data
@@ -88,13 +103,15 @@ export default function StockChart({
         day: "numeric",
       }),
       fullDate: d.date,
-      sma20: sma20[i],
       sma50: sma50[i],
+      sma200: sma200[i],
+      bollingerUpper: bollinger.upper[i],
+      bollingerMiddle: bollinger.middle[i],
+      bollingerLower: bollinger.lower[i],
     }))
     .filter((d) => !minDate || d.fullDate >= minDate);
 
   // Calculate price change
-  // Use filtered data for price change calculation to reflect visible range
   const firstPrice = chartData.length > 0 ? chartData[0].close : 0;
   const lastPrice =
     chartData.length > 0 ? chartData[chartData.length - 1].close : 0;
@@ -121,11 +138,17 @@ export default function StockChart({
   const CustomTooltip = ({
     active,
     payload,
-    label,
   }: {
     active?: boolean;
-    payload?: Array<{ payload: PriceData & { fullDate: string } }>;
-    label?: string;
+    payload?: Array<{
+      payload: PriceData & {
+        fullDate: string;
+        sma50?: number;
+        sma200?: number;
+        bollingerUpper?: number;
+        bollingerLower?: number;
+      };
+    }>;
   }) => {
     if (active && payload && payload.length) {
       const d = payload[0].payload;
@@ -155,23 +178,31 @@ export default function StockChart({
             <span className="text-blue-500 font-mono text-right">
               {formatVolume(d.volume)}
             </span>
-            {/* @ts-ignore */}
-            {d.sma20 && (
-              <>
-                <span className="text-muted-foreground">SMA 20:</span>
-                <span className="text-orange-400 font-mono text-right">
-                  {/* @ts-ignore */}
-                  {formatPrice(d.sma20)}
-                </span>
-              </>
-            )}
-            {/* @ts-ignore */}
             {d.sma50 && (
               <>
                 <span className="text-muted-foreground">SMA 50:</span>
-                <span className="text-cyan-400 font-mono text-right">
-                  {/* @ts-ignore */}
+                <span className="text-orange-400 font-mono text-right">
                   {formatPrice(d.sma50)}
+                </span>
+              </>
+            )}
+            {d.sma200 && (
+              <>
+                <span className="text-muted-foreground">SMA 200:</span>
+                <span className="text-cyan-400 font-mono text-right">
+                  {formatPrice(d.sma200)}
+                </span>
+              </>
+            )}
+            {showBollinger && d.bollingerUpper && d.bollingerLower && (
+              <>
+                <span className="text-muted-foreground">BB Upper:</span>
+                <span className="text-purple-400 font-mono text-right">
+                  {formatPrice(d.bollingerUpper)}
+                </span>
+                <span className="text-muted-foreground">BB Lower:</span>
+                <span className="text-purple-400 font-mono text-right">
+                  {formatPrice(d.bollingerLower)}
                 </span>
               </>
             )}
@@ -206,19 +237,53 @@ export default function StockChart({
           </div>
         </div>
 
-        {/* Chart Type Selector */}
-        <div className="flex p-1 bg-muted rounded-lg border border-border">
-          {(["line", "area", "candlestick"] as ChartType[]).map((type) => (
+        {/* Chart Controls */}
+        <div className="flex items-center gap-2">
+          {/* Indicator Toggles */}
+          <div className="flex gap-1">
             <Button
-              key={type}
-              variant={chartType === type ? "default" : "ghost"}
+              variant={showSMA50 ? "default" : "ghost"}
               size="sm"
-              onClick={() => setChartType(type)}
-              className="capitalize"
+              onClick={() => setShowSMA50(!showSMA50)}
+              className="text-xs"
+              title="Toggle SMA 50"
             >
-              {type}
+              <span className="text-orange-400">SMA50</span>
             </Button>
-          ))}
+            <Button
+              variant={showSMA200 ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setShowSMA200(!showSMA200)}
+              className="text-xs"
+              title="Toggle SMA 200"
+            >
+              <span className="text-cyan-400">SMA200</span>
+            </Button>
+            <Button
+              variant={showBollinger ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setShowBollinger(!showBollinger)}
+              className="text-xs"
+              title="Toggle Bollinger Bands"
+            >
+              BB
+            </Button>
+          </div>
+
+          {/* Chart Type Selector */}
+          <div className="flex p-1 bg-muted rounded-lg border border-border">
+            {(["line", "area", "candlestick"] as ChartType[]).map((type) => (
+              <Button
+                key={type}
+                variant={chartType === type ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setChartType(type)}
+                className="capitalize"
+              >
+                {type}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -227,79 +292,16 @@ export default function StockChart({
         <ResponsiveContainer width="100%" height="100%">
           {chartType === "line" ? (
             <LineChart data={chartData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#1e293b"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="date"
-                stroke="#64748b"
-                tick={{ fill: "#94a3b8", fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-                dy={10}
-              />
-              <YAxis
-                stroke="#64748b"
-                tick={{ fill: "#94a3b8", fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={formatPrice}
-                domain={["auto", "auto"]}
-                dx={-10}
-              />
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={{
-                  stroke: "#64748b",
-                  strokeWidth: 1,
-                  strokeDasharray: "4 4",
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="close"
-                stroke={isPositive ? "#10b981" : "#f43f5e"}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{
-                  r: 6,
-                  fill: isPositive ? "#10b981" : "#f43f5e",
-                  strokeWidth: 0,
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="sma20"
-                stroke="#fb923c"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="sma50"
-                stroke="#22d3ee"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={false}
-              />
-            </LineChart>
-          ) : chartType === "area" ? (
-            <AreaChart data={chartData}>
               <defs>
-                <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor={isPositive ? "#10b981" : "#f43f5e"}
-                    stopOpacity={0.3}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor={isPositive ? "#10b981" : "#f43f5e"}
-                    stopOpacity={0}
-                  />
+                <linearGradient
+                  id="bollingerGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="#a78bfa" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -332,6 +334,149 @@ export default function StockChart({
                   strokeDasharray: "4 4",
                 }}
               />
+              {/* Bollinger Bands */}
+              {showBollinger && (
+                <>
+                  <Area
+                    type="monotone"
+                    dataKey="bollingerUpper"
+                    stroke="none"
+                    fill="url(#bollingerGradient)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="bollingerUpper"
+                    stroke="#a78bfa"
+                    strokeWidth={1}
+                    dot={false}
+                    strokeDasharray="3 3"
+                    strokeOpacity={0.6}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="bollingerLower"
+                    stroke="#a78bfa"
+                    strokeWidth={1}
+                    dot={false}
+                    strokeDasharray="3 3"
+                    strokeOpacity={0.6}
+                  />
+                </>
+              )}
+              <Line
+                type="monotone"
+                dataKey="close"
+                stroke={isPositive ? "#10b981" : "#f43f5e"}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{
+                  r: 6,
+                  fill: isPositive ? "#10b981" : "#f43f5e",
+                  strokeWidth: 0,
+                }}
+              />
+              {showSMA50 && (
+                <Line
+                  type="monotone"
+                  dataKey="sma50"
+                  stroke="#fb923c"
+                  strokeWidth={1.5}
+                  dot={false}
+                  activeDot={false}
+                  strokeDasharray="5 5"
+                />
+              )}
+              {showSMA200 && (
+                <Line
+                  type="monotone"
+                  dataKey="sma200"
+                  stroke="#22d3ee"
+                  strokeWidth={1.5}
+                  dot={false}
+                  activeDot={false}
+                  strokeDasharray="5 5"
+                />
+              )}
+            </LineChart>
+          ) : chartType === "area" ? (
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor={isPositive ? "#10b981" : "#f43f5e"}
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor={isPositive ? "#10b981" : "#f43f5e"}
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+                <linearGradient
+                  id="bollingerGradientArea"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#a78bfa" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#1e293b"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                stroke="#64748b"
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                dy={10}
+              />
+              <YAxis
+                stroke="#64748b"
+                tick={{ fill: "#94a3b8", fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatPrice}
+                domain={["auto", "auto"]}
+                dx={-10}
+              />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{
+                  stroke: "#64748b",
+                  strokeWidth: 1,
+                  strokeDasharray: "4 4",
+                }}
+              />
+              {/* Bollinger Bands */}
+              {showBollinger && (
+                <>
+                  <Area
+                    type="monotone"
+                    dataKey="bollingerUpper"
+                    stroke="#a78bfa"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    strokeOpacity={0.6}
+                    fill="url(#bollingerGradientArea)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="bollingerLower"
+                    stroke="#a78bfa"
+                    strokeWidth={1}
+                    dot={false}
+                    strokeDasharray="3 3"
+                    strokeOpacity={0.6}
+                  />
+                </>
+              )}
               <Area
                 type="monotone"
                 dataKey="close"
@@ -339,25 +484,43 @@ export default function StockChart({
                 strokeWidth={2}
                 fill="url(#colorGradient)"
               />
-              <Line
-                type="monotone"
-                dataKey="sma20"
-                stroke="#fb923c"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="sma50"
-                stroke="#22d3ee"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={false}
-              />
+              {showSMA50 && (
+                <Line
+                  type="monotone"
+                  dataKey="sma50"
+                  stroke="#fb923c"
+                  strokeWidth={1.5}
+                  dot={false}
+                  activeDot={false}
+                  strokeDasharray="5 5"
+                />
+              )}
+              {showSMA200 && (
+                <Line
+                  type="monotone"
+                  dataKey="sma200"
+                  stroke="#22d3ee"
+                  strokeWidth={1.5}
+                  dot={false}
+                  activeDot={false}
+                  strokeDasharray="5 5"
+                />
+              )}
             </AreaChart>
           ) : (
             <ComposedChart data={chartData}>
+              <defs>
+                <linearGradient
+                  id="bollingerGradientCandle"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#a78bfa" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="#1e293b"
@@ -399,6 +562,31 @@ export default function StockChart({
                   strokeDasharray: "4 4",
                 }}
               />
+              {/* Bollinger Bands */}
+              {showBollinger && (
+                <>
+                  <Area
+                    type="monotone"
+                    dataKey="bollingerUpper"
+                    yAxisId="price"
+                    stroke="#a78bfa"
+                    strokeWidth={1}
+                    strokeDasharray="3 3"
+                    strokeOpacity={0.6}
+                    fill="url(#bollingerGradientCandle)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="bollingerLower"
+                    yAxisId="price"
+                    stroke="#a78bfa"
+                    strokeWidth={1}
+                    dot={false}
+                    strokeDasharray="3 3"
+                    strokeOpacity={0.6}
+                  />
+                </>
+              )}
               <Bar
                 dataKey="volume"
                 yAxisId="volume"
@@ -406,72 +594,101 @@ export default function StockChart({
                 opacity={0.3}
                 barSize={4}
               />
-              <Line
-                type="monotone"
-                dataKey="high"
+              <Bar
+                dataKey={candlestickBodyDataKey}
                 yAxisId="price"
-                stroke="#10b981"
-                strokeWidth={1}
-                dot={false}
-                strokeDasharray="3 3"
-              />
-              <Line
-                type="monotone"
-                dataKey="low"
-                yAxisId="price"
-                stroke="#f43f5e"
-                strokeWidth={1}
-                dot={false}
-                strokeDasharray="3 3"
-              />
-              <Line
-                type="monotone"
-                dataKey="close"
-                yAxisId="price"
-                stroke="#8b5cf6"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 0 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="sma20"
-                yAxisId="price"
-                stroke="#fb923c"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="sma50"
-                yAxisId="price"
-                stroke="#22d3ee"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={false}
-              />
+                shape={Candlestick}
+                barSize={8}
+              >
+                <ErrorBar
+                  dataKey={candlestickWhiskerDataKey}
+                  width={0}
+                  strokeWidth={1}
+                  stroke="#64748b"
+                />
+              </Bar>
+              {showSMA50 && (
+                <Line
+                  type="monotone"
+                  dataKey="sma50"
+                  yAxisId="price"
+                  stroke="#fb923c"
+                  strokeWidth={1.5}
+                  dot={false}
+                  activeDot={false}
+                  strokeDasharray="5 5"
+                />
+              )}
+              {showSMA200 && (
+                <Line
+                  type="monotone"
+                  dataKey="sma200"
+                  yAxisId="price"
+                  stroke="#22d3ee"
+                  strokeWidth={1.5}
+                  dot={false}
+                  activeDot={false}
+                  strokeDasharray="5 5"
+                />
+              )}
             </ComposedChart>
           )}
         </ResponsiveContainer>
       </div>
 
+      {/* Legend */}
+      <div className="flex flex-wrap items-center justify-center gap-4 mb-6 text-sm">
+        {showSMA50 && (
+          <div className="flex items-center gap-2">
+            <div
+              className="w-4 h-0.5 bg-orange-400"
+              style={{ borderTop: "2px dashed" }}
+            />
+            <span className="text-slate-400">SMA 50</span>
+          </div>
+        )}
+        {showSMA200 && (
+          <div className="flex items-center gap-2">
+            <div
+              className="w-4 h-0.5 bg-cyan-400"
+              style={{ borderTop: "2px dashed" }}
+            />
+            <span className="text-slate-400">SMA 200</span>
+          </div>
+        )}
+        {showBollinger && (
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-3 bg-purple-500/20 border border-purple-500/50 rounded-sm" />
+            <span className="text-slate-400">Bollinger Bands</span>
+          </div>
+        )}
+      </div>
+
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-          <p className="text-slate-400 text-sm mb-1">High</p>
+          <p className="text-slate-400 text-sm mb-1 flex items-center">
+            High
+            <InfoTooltip {...INDICATOR_HELP.high} />
+          </p>
           <p className="text-emerald-400 font-mono text-xl font-semibold tracking-tight">
             {formatPrice(Math.max(...data.map((d) => d.high)))}
           </p>
         </div>
         <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-          <p className="text-slate-400 text-sm mb-1">Low</p>
+          <p className="text-slate-400 text-sm mb-1 flex items-center">
+            Low
+            <InfoTooltip {...INDICATOR_HELP.low} />
+          </p>
           <p className="text-rose-400 font-mono text-xl font-semibold tracking-tight">
             {formatPrice(Math.min(...data.map((d) => d.low)))}
           </p>
         </div>
         <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-          <p className="text-slate-400 text-sm mb-1">Avg Volume</p>
+          <p className="text-slate-400 text-sm mb-1 flex items-center">
+            Avg Volume
+            <InfoTooltip {...INDICATOR_HELP.avgVolume} />
+          </p>
           <p className="text-blue-400 font-mono text-xl font-semibold tracking-tight">
             {formatVolume(
               data.reduce((sum, d) => sum + d.volume, 0) / data.length,
@@ -479,7 +696,10 @@ export default function StockChart({
           </p>
         </div>
         <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-          <p className="text-slate-400 text-sm mb-1">Data Points</p>
+          <p className="text-slate-400 text-sm mb-1 flex items-center">
+            Data Points
+            <InfoTooltip {...INDICATOR_HELP.dataPoints} />
+          </p>
           <p className="text-purple-400 font-mono text-xl font-semibold tracking-tight">
             {data.length}
           </p>

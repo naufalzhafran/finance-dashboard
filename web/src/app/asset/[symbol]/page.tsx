@@ -1,14 +1,33 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import StockChart from "@/components/StockChart";
 import DashboardControls from "@/components/DashboardControls";
 import FundamentalsGrid from "@/components/FundamentalsGrid";
 import FinancialsView from "@/components/FinancialsView";
+import TechnicalIndicators from "@/components/TechnicalIndicators";
+import RSIChart from "@/components/RSIChart";
+import MACDChart from "@/components/MACDChart";
+import RiskAnalytics from "@/components/RiskAnalytics";
+import VolatilityChart from "@/components/VolatilityChart";
+import DrawdownChart from "@/components/DrawdownChart";
 import { Asset } from "@/types";
 import { FundamentalData } from "@/lib/db";
 import { Card } from "@/components/ui/card";
+import {
+  calculateSMA,
+  calculateRSI,
+  calculateBollingerBands,
+  calculateMACD,
+  detectCrossovers,
+  calculateDailyReturns,
+  calculateHistoricalVolatility,
+  calculateDrawdown,
+  calculateMaxDrawdown,
+  calculate52WeekHighLow,
+  calculateBeta,
+} from "@/lib/technicalIndicators";
 
 interface PriceData {
   date: string;
@@ -73,6 +92,7 @@ export default function AssetDetail({
     initialSymbol,
   );
   const [priceData, setPriceData] = useState<PriceData[]>([]);
+  const [benchmarkData, setBenchmarkData] = useState<PriceData[]>([]);
   const [fundamentals, setFundamentals] = useState<FundamentalData | null>(
     null,
   );
@@ -85,6 +105,162 @@ export default function AssetDetail({
   const [fundamentalsLoading, setFundamentalsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [minDate, setMinDate] = useState<string | null>(null);
+
+  // Get the asset's currency
+  const selectedAsset = assets.find((a) => a.symbol === selectedSymbol);
+  const isIDRStock = selectedAsset?.currency === "IDR";
+
+  // Calculate technical indicators from price data
+  const technicalData = useMemo(() => {
+    if (priceData.length === 0) {
+      return {
+        rsi: [],
+        macd: { macd: [], signal: [], histogram: [] },
+        sma50: [],
+        sma200: [],
+        bollinger: { middle: [], upper: [], lower: [] },
+        crossovers: [],
+        chartData: [],
+      };
+    }
+
+    const rsi = calculateRSI(priceData, 14);
+    const macd = calculateMACD(priceData, 12, 26, 9);
+    const sma50 = calculateSMA(priceData, 50);
+    const sma200 = calculateSMA(priceData, 200);
+    const bollinger = calculateBollingerBands(priceData, 20, 2);
+    const crossovers = detectCrossovers(priceData, sma50, sma200);
+
+    // Format data for RSI and MACD charts (filtered by minDate for display)
+    const chartData = priceData
+      .map((d, i) => ({
+        date: new Date(d.date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        fullDate: d.date,
+        rsi: rsi[i],
+        macd: macd.macd[i],
+        signal: macd.signal[i],
+        histogram: macd.histogram[i],
+      }))
+      .filter((d) => !minDate || d.fullDate >= minDate);
+
+    return {
+      rsi,
+      macd,
+      sma50,
+      sma200,
+      bollinger,
+      crossovers,
+      chartData,
+    };
+  }, [priceData, minDate]);
+
+  // Calculate risk analytics
+  const riskData = useMemo(() => {
+    if (priceData.length === 0) {
+      return {
+        volatility: null,
+        maxDrawdown: null,
+        fiftyTwoWeekHL: null,
+        beta: null,
+        volatilityChartData: [],
+        drawdownChartData: [],
+      };
+    }
+
+    const dailyReturns = calculateDailyReturns(priceData);
+    const volatilityArray = calculateHistoricalVolatility(
+      dailyReturns,
+      21,
+      true,
+    );
+    const { drawdown } = calculateDrawdown(priceData);
+    const maxDrawdownResult = calculateMaxDrawdown(priceData);
+    const fiftyTwoWeekHL = calculate52WeekHighLow(priceData);
+
+    // Calculate beta only for IDR stocks with benchmark data
+    const beta =
+      isIDRStock && benchmarkData.length > 0
+        ? calculateBeta(priceData, benchmarkData, 252)
+        : null;
+
+    // Current volatility (last value)
+    const lastVolIndex = volatilityArray.length - 1;
+    const volatility = lastVolIndex >= 0 ? volatilityArray[lastVolIndex] : null;
+
+    // Format data for charts (filtered by minDate for display)
+    const volatilityChartData = priceData
+      .map((d, i) => ({
+        date: new Date(d.date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        fullDate: d.date,
+        volatility: volatilityArray[i],
+      }))
+      .filter((d) => !minDate || d.fullDate >= minDate);
+
+    const drawdownChartData = priceData
+      .map((d, i) => ({
+        date: new Date(d.date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        fullDate: d.date,
+        drawdown: drawdown[i],
+      }))
+      .filter((d) => !minDate || d.fullDate >= minDate);
+
+    return {
+      volatility,
+      maxDrawdown: maxDrawdownResult,
+      fiftyTwoWeekHL,
+      beta,
+      volatilityChartData,
+      drawdownChartData,
+    };
+  }, [priceData, benchmarkData, isIDRStock, minDate]);
+
+  // Get latest values for summary card
+  const latestIndicators = useMemo(() => {
+    const lastIndex = priceData.length - 1;
+    if (lastIndex < 0) {
+      return {
+        rsi: null,
+        macd: null,
+        signal: null,
+        currentPrice: 0,
+        bollingerUpper: null,
+        bollingerLower: null,
+        sma50: null,
+        sma200: null,
+        latestCrossover: null,
+      };
+    }
+
+    // Find latest crossover within displayed range
+    const displayedCrossovers = technicalData.crossovers.filter(
+      (c) => !minDate || c.date >= minDate,
+    );
+    const latestCrossover =
+      displayedCrossovers.length > 0
+        ? displayedCrossovers[displayedCrossovers.length - 1]
+        : null;
+
+    return {
+      rsi: technicalData.rsi[lastIndex],
+      macd: technicalData.macd.macd[lastIndex],
+      signal: technicalData.macd.signal[lastIndex],
+      currentPrice: priceData[lastIndex].close,
+      bollingerUpper: technicalData.bollinger.upper[lastIndex],
+      bollingerLower: technicalData.bollinger.lower[lastIndex],
+      sma50: technicalData.sma50[lastIndex],
+      sma200: technicalData.sma200[lastIndex],
+      latestCrossover,
+    };
+  }, [priceData, technicalData, minDate]);
 
   // Fetch assets on mount
   useEffect(() => {
@@ -103,14 +279,36 @@ export default function AssetDetail({
     fetchAssets();
   }, []);
 
+  // Fetch IHSG benchmark data for Beta calculation (for IDR stocks)
+  const fetchBenchmark = useCallback(async () => {
+    try {
+      // Fetch 1 year of IHSG data for beta calculation
+      const end = new Date().toISOString().split("T")[0];
+      const start = new Date();
+      start.setFullYear(start.getFullYear() - 1);
+
+      const query = new URLSearchParams({
+        start: start.toISOString().split("T")[0],
+        end,
+      });
+      const res = await fetch(`/api/prices/%5EJKSE?${query.toString()}`);
+      if (res.ok) {
+        const data: PriceResponse = await res.json();
+        setBenchmarkData(data.prices);
+      }
+    } catch (err) {
+      console.error("Failed to fetch benchmark data:", err);
+    }
+  }, []);
+
   // Fetch price data when symbol or range changes
   const fetchPrices = useCallback(async (symbol: string, range: TimeRange) => {
     setPriceLoading(true);
     setError(null);
     try {
       const displayStart = getStartDate(range);
-      // Fetch extra 4 months of data for MA calculation (buffer)
-      const fetchStart = getStartDate(range, 4);
+      // Fetch extra 12 months of data for SMA 200 calculation (buffer)
+      const fetchStart = getStartDate(range, 12);
       const end = new Date().toISOString().split("T")[0];
       setMinDate(displayStart);
 
@@ -157,6 +355,13 @@ export default function AssetDetail({
       fetchFundamentals(selectedSymbol);
     }
   }, [selectedSymbol, selectedRange, fetchPrices, fetchFundamentals]);
+
+  // Fetch benchmark data when we have an IDR stock selected
+  useEffect(() => {
+    if (isIDRStock && benchmarkData.length === 0) {
+      fetchBenchmark();
+    }
+  }, [isIDRStock, benchmarkData.length, fetchBenchmark]);
 
   const handleAssetSelect = (symbol: string) => {
     // Navigate to the new asset page
@@ -229,9 +434,7 @@ export default function AssetDetail({
               <StockChart
                 data={priceData}
                 symbol={selectedSymbol}
-                currency={
-                  assets.find((a) => a.symbol === selectedSymbol)?.currency
-                }
+                currency={selectedAsset?.currency}
                 minDate={minDate || undefined}
               />
             ) : (
@@ -252,6 +455,76 @@ export default function AssetDetail({
             )}
           </div>
 
+          {/* Technical Indicators Section */}
+          {selectedSymbol && !priceLoading && priceData.length > 0 && (
+            <>
+              <div className="animate-fade-in">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold">Technical Analysis</h2>
+                </div>
+                <TechnicalIndicators
+                  rsi={latestIndicators.rsi}
+                  macd={latestIndicators.macd}
+                  signal={latestIndicators.signal}
+                  currentPrice={latestIndicators.currentPrice}
+                  bollingerUpper={latestIndicators.bollingerUpper}
+                  bollingerLower={latestIndicators.bollingerLower}
+                  sma50={latestIndicators.sma50}
+                  sma200={latestIndicators.sma200}
+                  latestCrossover={latestIndicators.latestCrossover}
+                />
+              </div>
+
+              {/* RSI Chart */}
+              <div className="animate-fade-in">
+                <RSIChart data={technicalData.chartData} />
+              </div>
+
+              {/* MACD Chart */}
+              <div className="animate-fade-in">
+                <MACDChart data={technicalData.chartData} />
+              </div>
+            </>
+          )}
+
+          {/* Risk & Volatility Section */}
+          {selectedSymbol && !priceLoading && priceData.length > 0 && (
+            <>
+              <div className="animate-fade-in">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold">Risk & Volatility</h2>
+                </div>
+                <RiskAnalytics
+                  volatility={riskData.volatility}
+                  maxDrawdown={riskData.maxDrawdown}
+                  beta={riskData.beta}
+                  fiftyTwoWeekHL={riskData.fiftyTwoWeekHL}
+                  currency={selectedAsset?.currency}
+                />
+              </div>
+
+              {/* Volatility Chart */}
+              <div className="animate-fade-in">
+                <VolatilityChart data={riskData.volatilityChartData} />
+              </div>
+
+              {/* Drawdown Chart */}
+              <div className="animate-fade-in">
+                <DrawdownChart
+                  data={riskData.drawdownChartData}
+                  maxDrawdown={
+                    riskData.maxDrawdown
+                      ? {
+                          value: riskData.maxDrawdown.maxDrawdown,
+                          date: riskData.maxDrawdown.maxDrawdownDate,
+                        }
+                      : null
+                  }
+                />
+              </div>
+            </>
+          )}
+
           {/* Fundamentals Section */}
           {selectedSymbol && (
             <div className="animate-fade-in">
@@ -261,9 +534,7 @@ export default function AssetDetail({
               <FundamentalsGrid
                 data={fundamentals}
                 loading={fundamentalsLoading}
-                currency={
-                  assets.find((a) => a.symbol === selectedSymbol)?.currency
-                }
+                currency={selectedAsset?.currency}
               />
             </div>
           )}
@@ -276,9 +547,7 @@ export default function AssetDetail({
               </div>
               <FinancialsView
                 symbol={selectedSymbol}
-                currency={
-                  assets.find((a) => a.symbol === selectedSymbol)?.currency
-                }
+                currency={selectedAsset?.currency}
               />
             </div>
           )}
