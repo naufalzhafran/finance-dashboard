@@ -55,12 +55,6 @@ export default function MACDChart({ data }: MACDChartProps) {
             ? "Bullish"
             : "Bearish"
           : "N/A";
-      const trendColor =
-        trend === "Bullish"
-          ? "text-emerald-400"
-          : trend === "Bearish"
-            ? "text-rose-400"
-            : "text-slate-400";
 
       return (
         <Card className="p-3 !bg-background/95 border-border shadow-xl min-w-[180px]">

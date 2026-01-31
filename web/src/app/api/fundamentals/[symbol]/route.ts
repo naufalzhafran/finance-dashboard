@@ -5,7 +5,7 @@ type RouteContext = {
   params: Promise<{ symbol: string }>;
 };
 
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { symbol } = await context.params;
 

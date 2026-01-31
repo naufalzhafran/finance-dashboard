@@ -17,8 +17,7 @@ import VolatilityChart from "@/components/VolatilityChart";
 import DrawdownChart from "@/components/DrawdownChart";
 import StrategyCard from "@/components/StrategyCard";
 import { analyzeStock } from "@/lib/strategy";
-import { Asset } from "@/types";
-import { FundamentalData } from "@/lib/db";
+import { Asset, FundamentalData, PriceData } from "@/types";
 import { Card } from "@/components/ui/card";
 import {
   calculateSMA,
@@ -34,27 +33,7 @@ import {
   calculateBeta,
 } from "@/lib/technicalIndicators";
 
-interface PriceData {
-  date: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-}
-
-interface PriceResponse {
-  asset: Asset;
-  prices: PriceData[];
-  count: number;
-}
-
-interface FundamentalsResponse {
-  asset: Asset;
-  fundamentals: FundamentalData | null;
-}
-
-type TimeRange = "1M" | "3M" | "6M" | "1Y" | "YTD";
+import type { PriceResponse, FundamentalsResponse, TimeRange } from "@/types";
 
 const getStartDate = (range: TimeRange, bufferMonths = 0) => {
   const now = new Date();
@@ -93,9 +72,7 @@ export default function AssetDetail({
   const initialSymbol = decodeURIComponent(symbolParam);
 
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(
-    initialSymbol,
-  );
+  const [selectedSymbol] = useState<string | null>(initialSymbol);
   const [priceData, setPriceData] = useState<PriceData[]>([]);
   const [benchmarkData, setBenchmarkData] = useState<PriceData[]>([]);
   const [fundamentals, setFundamentals] = useState<FundamentalData | null>(

@@ -55,7 +55,7 @@ export default function DashboardControls({
   onDateChange,
   timeRange,
   onTimeRangeChange,
-  loading,
+  loading: _loading,
   hideDateControls,
 }: DashboardControlsProps) {
   const [open, setOpen] = useState(false);

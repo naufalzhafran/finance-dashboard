@@ -182,7 +182,7 @@ export default function FinancialsView({
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i} className="animate-pulse opacity-50">
-                    {columns.map((col, j) => (
+                    {columns.map((_col, j) => (
                       <td key={j} className="px-6 py-4">
                         <div className="h-4 bg-muted/30 rounded w-20" />
                       </td>

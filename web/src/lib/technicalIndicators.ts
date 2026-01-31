@@ -468,7 +468,6 @@ export interface MaxDrawdownResult {
 export function calculateMaxDrawdown(data: PriceData[]): MaxDrawdownResult {
   let maxDrawdown = 0;
   let maxDrawdownDate = data.length > 0 ? data[0].date : "";
-  let peakDate = data.length > 0 ? data[0].date : "";
   let recoveryDate: string | null = null;
 
   let rollingPeak = 0;

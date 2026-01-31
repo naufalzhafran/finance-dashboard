@@ -34,19 +34,22 @@ IDX_STOCKS = [
     "BBCA", "BBRI", "BMRI", "BBNI", "BRIS", "BTPS", "BJTM", "BDMN", "BNII",
     "MEGA", "NISP", "PNBN", "BNGA", "BJBR", "BSIM", "AGRO", "BBYB", "BGTG",
     "BBTN", "BBKP", "BKSW", "BMAS", "BNBA", "BTPN", "DNAR", "NOBU", "SDRA",
+    "ARTO", "AMAR", "BABP", "BVIC", "INPC", "MCOR",
     
     # Consumer Goods
     "UNVR", "ICBP", "INDF", "KLBF", "HMSP", "GGRM", "MYOR", "CINT", "DLTA",
     "ULTJ", "SIDO", "MLBI", "CLEO", "GOOD", "HOKI", "ADES", "CAMP", "FOOD",
     "STTP", "AISA", "SKBM", "SKLT", "CEKA", "PSDN", "BUDI", "ALTO", "PCAR",
+    "KEJU", "TBLA", "CMRY", "IKAN",
     
     # Telecommunications
-    "TLKM", "EXCL", "ISAT", "TOWR", "TBIG", "MTEL", "JAST",
+    "TLKM", "EXCL", "ISAT", "TOWR", "TBIG", "MTEL", "JAST", "SUPR",
     
     # Mining & Energy
     "ADRO", "ITMG", "PTBA", "INDY", "BUMI", "BSSR", "HRUM", "GEMS", "DOID",
     "MBAP", "KKGI", "BYAN", "UNTR", "MYOH", "DSSA", "TOBA", "MEDC", "ELSA",
-    "RUIS", "ANTM", "INCO", "TINS", "MDKA", "PSAB", "FIRE",
+    "RUIS", "ANTM", "INCO", "TINS", "MDKA", "PSAB", "FIRE", "MBMA", "BRMS",
+    "CUAN", "NCKL", "ZINC", "IFSH", "NICL", "ESSA",
     
     # Infrastructure & Construction
     "JSMR", "WIKA", "WSKT", "PTPP", "ADHI", "TOTL", "ACST", "IDPR", "NRCA",
@@ -55,18 +58,18 @@ IDX_STOCKS = [
     # Property & Real Estate
     "BSDE", "CTRA", "SMRA", "PWON", "LPKR", "DILD", "APLN", "ASRI", "JRPT",
     "MDLN", "KIJA", "PPRO", "GWSA", "MMLP", "DUTI", "BEST", "MKPI", "PLIN",
-    "BKSL", "GPRA", "GAMA", "LPCK", "URBN",
+    "BKSL", "GPRA", "GAMA", "LPCK", "URBN", "PANI", "TRIN", "POLL", "REAL",
     
     # Automotive & Components
     "ASII", "AUTO", "GJTL", "SMSM", "IMAS", "INDS", "BRAM", "LPIN", "PRAS",
-    "BOLT", "DRMA", "AMIN",
+    "BOLT", "DRMA", "AMIN", "MPMX",
     
     # Retail & Trade
     "ACES", "MAPI", "LPPF", "RALS", "ERAA", "MAPA", "AMRT", "RANC", "HERO",
-    "CSAP", "MPPA", "CENT", "ECII", "KOIN", "GLOB", "MIDI",
+    "CSAP", "MPPA", "CENT", "ECII", "KOIN", "GLOB", "MIDI", "SMAR", "TELE",
     
     # Healthcare & Pharmaceuticals
-    "SIDO", "PYFA", "KAEF", "MIKA", "SILO", "PRDA", "HEAL", "SAME", "BMHS",
+    "SIDO", "PYFA", "KAEF", "MIKA", "SILO", "PRDA", "HEAL", "SAME", "BMHS", "CARE", "SRAJ", "DVLA", "TSPC", "PEHA",
     
     # Media & Entertainment
     "SCMA", "MNCN", "VIVA", "LPLI", "KPIG", "FILM", "EMTK",
@@ -86,6 +89,7 @@ IDX_STOCKS = [
     
     # Technology
     "BUKA", "GOTO", "EMTK", "DCII", "MTDL", "LUCK", "DNET", "PURE",
+    "BREN", "CASH", "KIOS", "EDGE", "RUNS",
     
     # Food & Beverage
     "MYOR", "ICBP", "INDF", "CLEO", "ULTJ", "MLBI", "DLTA", "GOOD",
@@ -94,6 +98,10 @@ IDX_STOCKS = [
     "PGAS", "PEHA", "AKRA", "BKDP", "META", "WIFI", "LINK",
     "BFIN", "ADMF", "CFIN", "VRNA", "SMMA", "BTPN", "TRIM", "PANS",
     "MREI", "ABMM", "PNLF", "LPGI", "ASDM", "KREN", "WOWS", "AGII",
+    "AMMN", "TAPG", "SGER", "STRK",
+    
+    # Agriculture & Plantations
+    "LSIP", "AALI", "SIMP", "SGRO", "DSNG", "BWPT", "PALM", "SSMS", "JARR",
 ]
 
 def init_database() -> sqlite3.Connection:

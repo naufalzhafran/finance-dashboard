@@ -1,14 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  LineChart,
-  Line,
-  YAxis,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from "recharts";
+import { YAxis, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 
@@ -44,25 +37,24 @@ export default function MiniStockChart({
 }: MiniStockChartProps) {
   const router = useRouter();
 
-  const { priceChange, priceChangePercent, isPositive, lastPrice } =
-    useMemo(() => {
-      if (data.length === 0)
-        return {
-          priceChange: 0,
-          priceChangePercent: "0.00",
-          isPositive: true,
-          lastPrice: 0,
-        };
-      const first = data[0].close;
-      const last = data[data.length - 1].close;
-      const change = last - first;
+  const { priceChangePercent, isPositive, lastPrice } = useMemo(() => {
+    if (data.length === 0)
       return {
-        priceChange: change,
-        priceChangePercent: ((change / first) * 100).toFixed(2),
-        isPositive: change >= 0,
-        lastPrice: last,
+        priceChange: 0,
+        priceChangePercent: "0.00",
+        isPositive: true,
+        lastPrice: 0,
       };
-    }, [data]);
+    const first = data[0].close;
+    const last = data[data.length - 1].close;
+    const change = last - first;
+    return {
+      priceChange: change,
+      priceChangePercent: ((change / first) * 100).toFixed(2),
+      isPositive: change >= 0,
+      lastPrice: last,
+    };
+  }, [data]);
 
   const locale = currencyLocales[currency] || "en-US";
   const formatPrice = (value: number) =>

@@ -3,20 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import MiniStockChart from "@/components/MiniStockChart";
-import { Asset } from "@/types";
-// Note: Changed import to named because I might have issues with default vs named if I wasn't careful,
-// but DashboardControls is default export. Let's fix import below.
+import DashboardControls from "@/components/DashboardControls";
+import { Asset, SimplePriceData, TimeRange } from "@/types";
 import { ChevronDown } from "lucide-react";
-
-// Fix import since DashboardControls is default export
-import DefaultDashboardControls from "@/components/DashboardControls";
-
-interface PriceData {
-  date: string;
-  close: number;
-}
-
-type TimeRange = "1M" | "3M" | "6M" | "1Y" | "YTD";
 
 // Group definitions for the dashboard
 // Group definitions for the dashboard
@@ -73,7 +62,9 @@ const getStartDate = (range: TimeRange) => {
 export default function Home() {
   const router = useRouter();
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [marketData, setMarketData] = useState<Record<string, PriceData[]>>({});
+  const [marketData, setMarketData] = useState<
+    Record<string, SimplePriceData[]>
+  >({});
   const [loading, setLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<TimeRange>("3M"); // Default to 3M
 
@@ -128,7 +119,7 @@ export default function Home() {
         });
 
         const results = await Promise.all(promises);
-        const newMarketData: Record<string, PriceData[]> = {};
+        const newMarketData: Record<string, SimplePriceData[]> = {};
         results.forEach((r) => {
           if (r.prices.length > 0) {
             newMarketData[r.symbol] = r.prices;
@@ -196,7 +187,7 @@ export default function Home() {
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
         {/* Quick Search Section */}
         <section className="max-w-2xl mx-auto">
-          <DefaultDashboardControls
+          <DashboardControls
             assets={assets}
             selectedSymbol={null}
             onSelectAsset={handleAssetSelect}

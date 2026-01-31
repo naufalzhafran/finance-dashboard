@@ -20,9 +20,10 @@ const currencyLocales: Record<string, string> = {
 };
 
 const getPayoutHealth = (
-  ratio: number | null,
+  ratio: number | null | undefined,
 ): { label: string; color: string } => {
-  if (ratio === null) return { label: "N/A", color: "text-muted-foreground" };
+  if (ratio === null || ratio === undefined)
+    return { label: "N/A", color: "text-muted-foreground" };
 
   if (ratio < 0.3) return { label: "Low", color: "text-blue-400" };
   if (ratio < 0.6) return { label: "Healthy", color: "text-emerald-400" };
@@ -76,19 +77,19 @@ export default function DividendAnalytics({
   // Yahoo Finance returns dividend_yield and five_year_avg_dividend_yield
   // BOTH as percentage values (e.g., 4.24 = 4.24%), not decimals
   // So we display them directly without multiplying by 100
-  const formatDividendPercent = (val: number | null) => {
-    if (val === null || val === undefined) return "—";
+  const formatDividendPercent = (val: number | null | undefined) => {
+    if (val == null) return "—";
     return `${val.toFixed(2)}%`;
   };
 
   // For payout_ratio, Yahoo Finance returns it as a decimal (0.50 = 50%)
-  const formatPercent = (val: number | null) => {
-    if (val === null || val === undefined) return "—";
+  const formatPercent = (val: number | null | undefined) => {
+    if (val == null) return "—";
     return `${(val * 100).toFixed(2)}%`;
   };
 
-  const formatCurrency = (val: number | null) => {
-    if (val === null || val === undefined) return "—";
+  const formatCurrency = (val: number | null | undefined) => {
+    if (val == null) return "—";
     return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: currency,
@@ -101,14 +102,13 @@ export default function DividendAnalytics({
   // Calculate comparison to 5-year average
   // Both values are already in percentage format (e.g., 4.24 = 4.24%)
   const yieldComparison = (() => {
-    if (
-      data.dividend_yield === null ||
-      data.five_year_avg_dividend_yield === null
-    ) {
+    const yield_ = data.dividend_yield;
+    const avgYield = data.five_year_avg_dividend_yield;
+    if (yield_ == null || avgYield == null) {
       return null;
     }
-    const diff = data.dividend_yield - data.five_year_avg_dividend_yield;
-    const pctChange = (diff / data.five_year_avg_dividend_yield) * 100;
+    const diff = yield_ - avgYield;
+    const pctChange = (diff / avgYield) * 100;
     return {
       isAbove: diff > 0,
       pctChange: Math.abs(pctChange).toFixed(1),
@@ -147,21 +147,21 @@ export default function DividendAnalytics({
           </div>
 
           {/* Comparison visual */}
-          {data.dividend_yield !== null &&
-            data.five_year_avg_dividend_yield !== null && (
+          {data.dividend_yield != null &&
+            data.five_year_avg_dividend_yield != null && (
               <div className="relative h-3 rounded-full bg-muted/30 overflow-visible">
                 {/* 5-year average marker */}
                 <div
                   className="absolute top-0 bottom-0 w-0.5 bg-white/50"
                   style={{
-                    left: `${Math.min(90, (data.five_year_avg_dividend_yield / 10) * 100)}%`,
+                    left: `${Math.min(90, ((data.five_year_avg_dividend_yield ?? 0) / 10) * 100)}%`,
                   }}
                 />
                 {/* Current yield bar */}
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
                   style={{
-                    width: `${Math.min(100, (data.dividend_yield / 10) * 100)}%`,
+                    width: `${Math.min(100, ((data.dividend_yield ?? 0) / 10) * 100)}%`,
                   }}
                 />
               </div>

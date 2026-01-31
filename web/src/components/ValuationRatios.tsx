@@ -1,7 +1,6 @@
 "use client";
 
 import { FundamentalData } from "@/lib/db";
-import { MetricCard } from "./MetricCard";
 
 interface ValuationRatiosProps {
   data: FundamentalData | null;
@@ -10,10 +9,10 @@ interface ValuationRatiosProps {
 
 // Fair value assessment based on common market benchmarks
 const getValuationStatus = (
-  value: number | null,
+  value: number | null | undefined,
   metric: "pe" | "pb" | "ps",
 ): { label: string; color: string } => {
-  if (value === null) return { label: "N/A", color: "text-muted-foreground" };
+  if (value == null) return { label: "N/A", color: "text-muted-foreground" };
 
   // Thresholds vary by metric
   const thresholds = {
@@ -46,8 +45,8 @@ export default function ValuationRatios({
     return null;
   }
 
-  const formatRatio = (val: number | null) => {
-    if (val === null || val === undefined) return "—";
+  const formatRatio = (val: number | null | undefined) => {
+    if (val == null) return "—";
     return val.toLocaleString("en-US", { maximumFractionDigits: 2 });
   };
 
