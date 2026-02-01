@@ -238,9 +238,9 @@ export default function StockChart({
         </div>
 
         {/* Chart Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
           {/* Indicator Toggles */}
-          <div className="flex gap-1">
+          <div className="flex gap-1 shrink-0">
             <Button
               variant={showSMA50 ? "default" : "ghost"}
               size="sm"
@@ -271,14 +271,14 @@ export default function StockChart({
           </div>
 
           {/* Chart Type Selector */}
-          <div className="flex p-1 bg-muted rounded-lg border border-border">
+          <div className="flex p-1 bg-muted rounded-lg border border-border overflow-x-auto max-w-full">
             {(["line", "area", "candlestick"] as ChartType[]).map((type) => (
               <Button
                 key={type}
                 variant={chartType === type ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setChartType(type)}
-                className="capitalize"
+                className="capitalize shrink-0"
               >
                 {type}
               </Button>
