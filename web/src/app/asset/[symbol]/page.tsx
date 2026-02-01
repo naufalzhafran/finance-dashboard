@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, use, useMemo } from "react";
-import { Book } from "lucide-react";
 import { useRouter } from "next/navigation";
+import ResponsiveHeader from "@/components/ResponsiveHeader";
 import StockChart from "@/components/StockChart";
 import DashboardControls from "@/components/DashboardControls";
 import FundamentalsGrid from "@/components/FundamentalsGrid";
@@ -364,35 +364,13 @@ export default function AssetDetail({
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent/20 rounded-full blur-[100px]" />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 border-b border-white/5 backdrop-blur-md bg-background/50 sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div
-            className="flex items-center gap-4 cursor-pointer"
-            onClick={() => router.push("/")}
-          >
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
-              <span className="text-xl">📈</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">
-                Finance Dashboard
-              </h1>
-              <p className="text-muted-foreground text-xs">
-                Asset Intelligence Control Center
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => router.push("/glossary")}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/50 border border-border hover:bg-muted/50 transition-colors text-sm font-medium text-muted-foreground hover:text-primary"
-          >
-            <Book className="w-4 h-4" />
-            <span className="hidden sm:inline">Glossary</span>
-          </button>
-        </div>
-      </header>
+      <ResponsiveHeader
+        title={selectedSymbol || "Asset Detail"}
+        subtitle={
+          assets.find((a) => a.symbol === selectedSymbol)?.name ||
+          "Stock Analysis"
+        }
+      />
 
       {/* Main Content */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

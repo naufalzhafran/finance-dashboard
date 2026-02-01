@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, Book, ChevronRight } from "lucide-react";
+import { ChevronLeft, Book, ChevronRight, Menu, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 // --- Content Data ---
 const chapters = [
@@ -339,6 +340,7 @@ const chapters = [
 export default function GlossaryPage() {
   const router = useRouter();
   const [activeChapter, setActiveChapter] = useState("technical");
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   return (
     <div className="min-h-screen bg-transparent relative overflow-x-hidden">
@@ -363,15 +365,30 @@ export default function GlossaryPage() {
             </div>
           </button>
 
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
-            <Book className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2">
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+              >
+                {showMobileMenu ? (
+                  <X className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <Menu className="w-5 h-5 text-muted-foreground" />
+                )}
+              </Button>
+            </div>
+            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
+              <Book className="w-5 h-5 text-white" />
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8 relative z-10">
-        {/* Navigation Sidebar */}
-        <aside className="w-full md:w-64 shrink-0 md:sticky md:top-24 md:h-[calc(100vh-8rem)]">
+        {/* Navigation Sidebar (Desktop) */}
+        <aside className="hidden md:block w-full md:w-64 shrink-0 md:sticky md:top-24 md:h-[calc(100vh-8rem)]">
           <Card className="bg-background/50 backdrop-blur-sm p-4 h-full border-border/50 overflow-y-auto">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-4 px-2">
               Table of Contents
@@ -397,6 +414,44 @@ export default function GlossaryPage() {
             </nav>
           </Card>
         </aside>
+
+        {/* Mobile Navigation Drawer */}
+        {showMobileMenu && (
+          <div className="fixed inset-0 z-50 md:hidden bg-background/80 backdrop-blur-sm animate-in fade-in-0 mt-[73px]">
+            <div className="bg-background border-b border-white/5 p-4 shadow-lg">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-4 px-2">
+                Table of Contents
+              </h3>
+              <nav className="space-y-1">
+                {chapters.map((chapter) => (
+                  <button
+                    key={chapter.id}
+                    onClick={() => {
+                      setActiveChapter(chapter.id);
+                      setShowMobileMenu(false);
+                    }}
+                    className={cn(
+                      "w-full text-left px-4 py-3 text-sm rounded-lg transition-all flex items-center justify-between group",
+                      activeChapter === chapter.id
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                    )}
+                  >
+                    {chapter.title}
+                    {activeChapter === chapter.id && (
+                      <ChevronRight className="w-3 h-3" />
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </div>
+            {/* Click outside to close area */}
+            <div
+              className="h-full w-full"
+              onClick={() => setShowMobileMenu(false)}
+            />
+          </div>
+        )}
 
         {/* Content Area */}
         <div className="flex-1 space-y-12 pb-24">

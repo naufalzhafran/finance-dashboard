@@ -69,7 +69,7 @@ export default function DashboardControls({
 
   return (
     <Card className="mb-6 p-4 sticky top-[73px] z-40 backdrop-blur-xl bg-background/80 border-border">
-      <div className="flex flex-col lg:flex-row lg:items-end gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-end gap-4 flex-wrap">
         {/* Search Bar */}
         <div className="flex-1 min-w-0">
           <label className="text-[10px] uppercase text-muted-foreground font-bold px-1 mb-1 block">

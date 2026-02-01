@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import MiniStockChart from "@/components/MiniStockChart";
 import DashboardControls from "@/components/DashboardControls";
+import ResponsiveHeader from "@/components/ResponsiveHeader";
 import { Asset, SimplePriceData, TimeRange } from "@/types";
-import { ChevronDown, Book } from "lucide-react";
 
 // Group definitions for the dashboard
 // Group definitions for the dashboard
@@ -151,47 +151,7 @@ export default function Home() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent/20 rounded-full blur-[100px]" />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 border-b border-white/5 backdrop-blur-md bg-background/50 sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
-              <span className="text-xl">📈</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">
-                Finance Dashboard
-              </h1>
-              <p className="text-muted-foreground text-xs">Market Overview</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/glossary")}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/50 border border-border hover:bg-muted/50 transition-colors text-sm font-medium text-muted-foreground hover:text-primary"
-            >
-              <Book className="w-4 h-4" />
-              <span className="hidden sm:inline">Glossary</span>
-            </button>
-
-            <div className="relative">
-              <select
-                value={selectedRange}
-                onChange={(e) => setSelectedRange(e.target.value as TimeRange)}
-                className="appearance-none bg-background/50 hover:bg-muted/50 border border-border rounded-lg pl-3 pr-9 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors cursor-pointer"
-              >
-                <option value="1M">1 Month</option>
-                <option value="3M">3 Months</option>
-                <option value="6M">6 Months</option>
-                <option value="1Y">1 Year</option>
-                <option value="YTD">Year to Date</option>
-              </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            </div>
-          </div>
-        </div>
-      </header>
+      <ResponsiveHeader />
 
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
         {/* Quick Search Section */}
@@ -200,11 +160,9 @@ export default function Home() {
             assets={assets}
             selectedSymbol={null}
             onSelectAsset={handleAssetSelect}
-            startDate=""
-            endDate=""
-            onDateChange={() => {}}
+            timeRange={selectedRange}
+            onTimeRangeChange={(range) => setSelectedRange(range as TimeRange)}
             loading={false}
-            hideDateControls={true}
           />
         </section>
 
