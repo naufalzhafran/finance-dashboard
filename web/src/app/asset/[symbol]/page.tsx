@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, use, useMemo } from "react";
+import { Book } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StockChart from "@/components/StockChart";
 import DashboardControls from "@/components/DashboardControls";
@@ -365,7 +366,7 @@ export default function AssetDetail({
 
       {/* Header */}
       <header className="relative z-10 border-b border-white/5 backdrop-blur-md bg-background/50 sticky top-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div
             className="flex items-center gap-4 cursor-pointer"
             onClick={() => router.push("/")}
@@ -382,6 +383,14 @@ export default function AssetDetail({
               </p>
             </div>
           </div>
+
+          <button
+            onClick={() => router.push("/glossary")}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/50 border border-border hover:bg-muted/50 transition-colors text-sm font-medium text-muted-foreground hover:text-primary"
+          >
+            <Book className="w-4 h-4" />
+            <span className="hidden sm:inline">Glossary</span>
+          </button>
         </div>
       </header>
 
