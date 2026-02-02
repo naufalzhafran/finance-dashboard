@@ -53,6 +53,7 @@ interface StockChartProps {
   symbol: string;
   currency?: string;
   minDate?: string;
+  isStock?: boolean;
 }
 
 type ChartType = "line" | "area" | "candlestick";
@@ -73,6 +74,7 @@ export default function StockChart({
   symbol,
   currency = "USD",
   minDate,
+  isStock = true,
 }: StockChartProps) {
   const [chartType, setChartType] = useState<ChartType>("area");
   const [showBollinger, setShowBollinger] = useState(true);
@@ -174,11 +176,15 @@ export default function StockChart({
             <span className="text-foreground font-mono text-right">
               {formatPrice(d.close)}
             </span>
-            <span className="text-muted-foreground">Volume:</span>
-            <span className="text-blue-500 font-mono text-right">
-              {formatVolume(d.volume)}
-            </span>
-            {d.sma50 && (
+            {isStock && (
+              <>
+                <span className="text-muted-foreground">Volume:</span>
+                <span className="text-blue-500 font-mono text-right">
+                  {formatVolume(d.volume)}
+                </span>
+              </>
+            )}
+            {isStock && d.sma50 && (
               <>
                 <span className="text-muted-foreground">SMA 50:</span>
                 <span className="text-orange-400 font-mono text-right">
@@ -186,7 +192,7 @@ export default function StockChart({
                 </span>
               </>
             )}
-            {d.sma200 && (
+            {isStock && d.sma200 && (
               <>
                 <span className="text-muted-foreground">SMA 200:</span>
                 <span className="text-cyan-400 font-mono text-right">
@@ -194,18 +200,21 @@ export default function StockChart({
                 </span>
               </>
             )}
-            {showBollinger && d.bollingerUpper && d.bollingerLower && (
-              <>
-                <span className="text-muted-foreground">BB Upper:</span>
-                <span className="text-purple-400 font-mono text-right">
-                  {formatPrice(d.bollingerUpper)}
-                </span>
-                <span className="text-muted-foreground">BB Lower:</span>
-                <span className="text-purple-400 font-mono text-right">
-                  {formatPrice(d.bollingerLower)}
-                </span>
-              </>
-            )}
+            {isStock &&
+              showBollinger &&
+              d.bollingerUpper &&
+              d.bollingerLower && (
+                <>
+                  <span className="text-muted-foreground">BB Upper:</span>
+                  <span className="text-purple-400 font-mono text-right">
+                    {formatPrice(d.bollingerUpper)}
+                  </span>
+                  <span className="text-muted-foreground">BB Lower:</span>
+                  <span className="text-purple-400 font-mono text-right">
+                    {formatPrice(d.bollingerLower)}
+                  </span>
+                </>
+              )}
           </div>
         </Card>
       );
@@ -237,54 +246,56 @@ export default function StockChart({
           </div>
         </div>
 
-        {/* Chart Controls */}
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          {/* Indicator Toggles */}
-          <div className="flex gap-1 shrink-0">
-            <Button
-              variant={showSMA50 ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setShowSMA50(!showSMA50)}
-              className="text-xs"
-              title="Toggle SMA 50"
-            >
-              <span className="text-orange-400">SMA50</span>
-            </Button>
-            <Button
-              variant={showSMA200 ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setShowSMA200(!showSMA200)}
-              className="text-xs"
-              title="Toggle SMA 200"
-            >
-              <span className="text-cyan-400">SMA200</span>
-            </Button>
-            <Button
-              variant={showBollinger ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setShowBollinger(!showBollinger)}
-              className="text-xs"
-              title="Toggle Bollinger Bands"
-            >
-              BB
-            </Button>
-          </div>
-
-          {/* Chart Type Selector */}
-          <div className="flex p-1 bg-muted rounded-lg border border-border overflow-x-auto max-w-full">
-            {(["line", "area", "candlestick"] as ChartType[]).map((type) => (
+        {/* Chart Controls - Only show for stocks */}
+        {isStock && (
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            {/* Indicator Toggles */}
+            <div className="flex gap-1 shrink-0">
               <Button
-                key={type}
-                variant={chartType === type ? "default" : "ghost"}
+                variant={showSMA50 ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setChartType(type)}
-                className="capitalize shrink-0"
+                onClick={() => setShowSMA50(!showSMA50)}
+                className="text-xs"
+                title="Toggle SMA 50"
               >
-                {type}
+                <span className="text-orange-400">SMA50</span>
               </Button>
-            ))}
+              <Button
+                variant={showSMA200 ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setShowSMA200(!showSMA200)}
+                className="text-xs"
+                title="Toggle SMA 200"
+              >
+                <span className="text-cyan-400">SMA200</span>
+              </Button>
+              <Button
+                variant={showBollinger ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setShowBollinger(!showBollinger)}
+                className="text-xs"
+                title="Toggle Bollinger Bands"
+              >
+                BB
+              </Button>
+            </div>
+
+            {/* Chart Type Selector */}
+            <div className="flex p-1 bg-muted rounded-lg border border-border overflow-x-auto max-w-full">
+              {(["line", "area", "candlestick"] as ChartType[]).map((type) => (
+                <Button
+                  key={type}
+                  variant={chartType === type ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setChartType(type)}
+                  className="capitalize shrink-0"
+                >
+                  {type}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Main Chart */}
@@ -335,7 +346,7 @@ export default function StockChart({
                 }}
               />
               {/* Bollinger Bands */}
-              {showBollinger && (
+              {isStock && showBollinger && (
                 <>
                   <Area
                     type="monotone"
@@ -375,7 +386,7 @@ export default function StockChart({
                   strokeWidth: 0,
                 }}
               />
-              {showSMA50 && (
+              {isStock && showSMA50 && (
                 <Line
                   type="monotone"
                   dataKey="sma50"
@@ -386,7 +397,7 @@ export default function StockChart({
                   strokeDasharray="5 5"
                 />
               )}
-              {showSMA200 && (
+              {isStock && showSMA200 && (
                 <Line
                   type="monotone"
                   dataKey="sma200"
@@ -455,7 +466,7 @@ export default function StockChart({
                 }}
               />
               {/* Bollinger Bands */}
-              {showBollinger && (
+              {isStock && showBollinger && (
                 <>
                   <Area
                     type="monotone"
@@ -484,7 +495,7 @@ export default function StockChart({
                 strokeWidth={2}
                 fill="url(#colorGradient)"
               />
-              {showSMA50 && (
+              {isStock && showSMA50 && (
                 <Line
                   type="monotone"
                   dataKey="sma50"
@@ -495,7 +506,7 @@ export default function StockChart({
                   strokeDasharray="5 5"
                 />
               )}
-              {showSMA200 && (
+              {isStock && showSMA200 && (
                 <Line
                   type="monotone"
                   dataKey="sma200"
@@ -563,7 +574,7 @@ export default function StockChart({
                 }}
               />
               {/* Bollinger Bands */}
-              {showBollinger && (
+              {isStock && showBollinger && (
                 <>
                   <Area
                     type="monotone"
@@ -587,13 +598,15 @@ export default function StockChart({
                   />
                 </>
               )}
-              <Bar
-                dataKey="volume"
-                yAxisId="volume"
-                fill="#3b82f6"
-                opacity={0.3}
-                barSize={4}
-              />
+              {isStock && (
+                <Bar
+                  dataKey="volume"
+                  yAxisId="volume"
+                  fill="#3b82f6"
+                  opacity={0.3}
+                  barSize={4}
+                />
+              )}
               <Bar
                 dataKey={candlestickBodyDataKey}
                 yAxisId="price"
@@ -607,7 +620,7 @@ export default function StockChart({
                   stroke="#64748b"
                 />
               </Bar>
-              {showSMA50 && (
+              {isStock && showSMA50 && (
                 <Line
                   type="monotone"
                   dataKey="sma50"
@@ -619,7 +632,7 @@ export default function StockChart({
                   strokeDasharray="5 5"
                 />
               )}
-              {showSMA200 && (
+              {isStock && showSMA200 && (
                 <Line
                   type="monotone"
                   dataKey="sma200"
@@ -636,33 +649,35 @@ export default function StockChart({
         </ResponsiveContainer>
       </div>
 
-      {/* Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-4 mb-6 text-sm">
-        {showSMA50 && (
-          <div className="flex items-center gap-2">
-            <div
-              className="w-4 h-0.5 bg-orange-400"
-              style={{ borderTop: "2px dashed" }}
-            />
-            <span className="text-slate-400">SMA 50</span>
-          </div>
-        )}
-        {showSMA200 && (
-          <div className="flex items-center gap-2">
-            <div
-              className="w-4 h-0.5 bg-cyan-400"
-              style={{ borderTop: "2px dashed" }}
-            />
-            <span className="text-slate-400">SMA 200</span>
-          </div>
-        )}
-        {showBollinger && (
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-3 bg-purple-500/20 border border-purple-500/50 rounded-sm" />
-            <span className="text-slate-400">Bollinger Bands</span>
-          </div>
-        )}
-      </div>
+      {/* Legend - Only for Stocks */}
+      {isStock && (
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-6 text-sm">
+          {showSMA50 && (
+            <div className="flex items-center gap-2">
+              <div
+                className="w-4 h-0.5 bg-orange-400"
+                style={{ borderTop: "2px dashed" }}
+              />
+              <span className="text-slate-400">SMA 50</span>
+            </div>
+          )}
+          {showSMA200 && (
+            <div className="flex items-center gap-2">
+              <div
+                className="w-4 h-0.5 bg-cyan-400"
+                style={{ borderTop: "2px dashed" }}
+              />
+              <span className="text-slate-400">SMA 200</span>
+            </div>
+          )}
+          {showBollinger && (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-3 bg-purple-500/20 border border-purple-500/50 rounded-sm" />
+              <span className="text-slate-400">Bollinger Bands</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -684,17 +699,19 @@ export default function StockChart({
             {formatPrice(Math.min(...data.map((d) => d.low)))}
           </p>
         </div>
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-          <p className="text-slate-400 text-sm mb-1 flex items-center">
-            Avg Volume
-            <InfoTooltip {...INDICATOR_HELP.avgVolume} />
-          </p>
-          <p className="text-blue-400 font-mono text-xl font-semibold tracking-tight">
-            {formatVolume(
-              data.reduce((sum, d) => sum + d.volume, 0) / data.length,
-            )}
-          </p>
-        </div>
+        {isStock && (
+          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+            <p className="text-slate-400 text-sm mb-1 flex items-center">
+              Avg Volume
+              <InfoTooltip {...INDICATOR_HELP.avgVolume} />
+            </p>
+            <p className="text-blue-400 font-mono text-xl font-semibold tracking-tight">
+              {formatVolume(
+                data.reduce((sum, d) => sum + d.volume, 0) / data.length,
+              )}
+            </p>
+          </div>
+        )}
         <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
           <p className="text-slate-400 text-sm mb-1 flex items-center">
             Data Points

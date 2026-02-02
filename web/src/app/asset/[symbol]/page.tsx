@@ -89,8 +89,10 @@ export default function AssetDetail({
   const [error, setError] = useState<string | null>(null);
   const [minDate, setMinDate] = useState<string | null>(null);
 
-  // Get the asset's currency
+  // Determine if it is a stock (vs index, currency, commodity, etc.)
   const selectedAsset = assets.find((a) => a.symbol === selectedSymbol);
+  // Default to true if not found, to be safe, or check asset_type explicitly
+  const isStock = selectedAsset?.asset_type === "stock";
   const isIDRStock = selectedAsset?.currency === "IDR";
 
   // Calculate technical indicators from price data
@@ -410,6 +412,7 @@ export default function AssetDetail({
                 symbol={selectedSymbol}
                 currency={selectedAsset?.currency}
                 minDate={minDate || undefined}
+                isStock={isStock}
               />
             ) : (
               <Card className="h-[500px] flex items-center justify-center text-center p-8 bg-background/50 backdrop-blur-sm">
@@ -429,8 +432,8 @@ export default function AssetDetail({
             )}
           </div>
 
-          {/* Strategy Section */}
-          {selectedSymbol && !loading && (
+          {/* Strategy Section - Only for Stocks */}
+          {isStock && selectedSymbol && !loading && (
             <div className="animate-fade-in">
               <StrategyCard
                 analysis={strategyResult}
@@ -439,78 +442,84 @@ export default function AssetDetail({
             </div>
           )}
 
-          {/* Technical Indicators Section */}
-          {selectedSymbol && !priceLoading && priceData.length > 0 && (
-            <>
-              <div className="animate-fade-in">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold">Technical Analysis</h2>
+          {/* Technical Indicators Section - Only for Stocks */}
+          {isStock &&
+            selectedSymbol &&
+            !priceLoading &&
+            priceData.length > 0 && (
+              <>
+                <div className="animate-fade-in">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold">Technical Analysis</h2>
+                  </div>
+                  <TechnicalIndicators
+                    rsi={latestIndicators.rsi}
+                    macd={latestIndicators.macd}
+                    signal={latestIndicators.signal}
+                    currentPrice={latestIndicators.currentPrice}
+                    bollingerUpper={latestIndicators.bollingerUpper}
+                    bollingerLower={latestIndicators.bollingerLower}
+                    sma50={latestIndicators.sma50}
+                    sma200={latestIndicators.sma200}
+                    latestCrossover={latestIndicators.latestCrossover}
+                  />
                 </div>
-                <TechnicalIndicators
-                  rsi={latestIndicators.rsi}
-                  macd={latestIndicators.macd}
-                  signal={latestIndicators.signal}
-                  currentPrice={latestIndicators.currentPrice}
-                  bollingerUpper={latestIndicators.bollingerUpper}
-                  bollingerLower={latestIndicators.bollingerLower}
-                  sma50={latestIndicators.sma50}
-                  sma200={latestIndicators.sma200}
-                  latestCrossover={latestIndicators.latestCrossover}
-                />
-              </div>
 
-              {/* RSI Chart */}
-              <div className="animate-fade-in">
-                <RSIChart data={technicalData.chartData} />
-              </div>
-
-              {/* MACD Chart */}
-              <div className="animate-fade-in">
-                <MACDChart data={technicalData.chartData} />
-              </div>
-            </>
-          )}
-
-          {/* Risk & Volatility Section */}
-          {selectedSymbol && !priceLoading && priceData.length > 0 && (
-            <>
-              <div className="animate-fade-in">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold">Risk & Volatility</h2>
+                {/* RSI Chart */}
+                <div className="animate-fade-in">
+                  <RSIChart data={technicalData.chartData} />
                 </div>
-                <RiskAnalytics
-                  volatility={riskData.volatility}
-                  maxDrawdown={riskData.maxDrawdown}
-                  beta={riskData.beta}
-                  fiftyTwoWeekHL={riskData.fiftyTwoWeekHL}
-                  currency={selectedAsset?.currency}
-                />
-              </div>
 
-              {/* Volatility Chart */}
-              <div className="animate-fade-in">
-                <VolatilityChart data={riskData.volatilityChartData} />
-              </div>
+                {/* MACD Chart */}
+                <div className="animate-fade-in">
+                  <MACDChart data={technicalData.chartData} />
+                </div>
+              </>
+            )}
 
-              {/* Drawdown Chart */}
-              <div className="animate-fade-in">
-                <DrawdownChart
-                  data={riskData.drawdownChartData}
-                  maxDrawdown={
-                    riskData.maxDrawdown
-                      ? {
-                          value: riskData.maxDrawdown.maxDrawdown,
-                          date: riskData.maxDrawdown.maxDrawdownDate,
-                        }
-                      : null
-                  }
-                />
-              </div>
-            </>
-          )}
+          {/* Risk & Volatility Section - Only for Stocks */}
+          {isStock &&
+            selectedSymbol &&
+            !priceLoading &&
+            priceData.length > 0 && (
+              <>
+                <div className="animate-fade-in">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold">Risk & Volatility</h2>
+                  </div>
+                  <RiskAnalytics
+                    volatility={riskData.volatility}
+                    maxDrawdown={riskData.maxDrawdown}
+                    beta={riskData.beta}
+                    fiftyTwoWeekHL={riskData.fiftyTwoWeekHL}
+                    currency={selectedAsset?.currency}
+                  />
+                </div>
 
-          {/* Fundamentals Section */}
-          {selectedSymbol && (
+                {/* Volatility Chart */}
+                <div className="animate-fade-in">
+                  <VolatilityChart data={riskData.volatilityChartData} />
+                </div>
+
+                {/* Drawdown Chart */}
+                <div className="animate-fade-in">
+                  <DrawdownChart
+                    data={riskData.drawdownChartData}
+                    maxDrawdown={
+                      riskData.maxDrawdown
+                        ? {
+                            value: riskData.maxDrawdown.maxDrawdown,
+                            date: riskData.maxDrawdown.maxDrawdownDate,
+                          }
+                        : null
+                    }
+                  />
+                </div>
+              </>
+            )}
+
+          {/* Fundamentals Section - Only for Stocks */}
+          {isStock && selectedSymbol && (
             <div className="animate-fade-in space-y-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Fundamentals</h2>
@@ -544,8 +553,8 @@ export default function AssetDetail({
             </div>
           )}
 
-          {/* Financial Statements Section */}
-          {selectedSymbol && (
+          {/* Financial Statements Section - Only for Stocks */}
+          {isStock && selectedSymbol && (
             <div className="animate-fade-in">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold">Financial Statements</h2>
