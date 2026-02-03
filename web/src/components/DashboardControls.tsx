@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
 import {
   Calendar as CalendarIcon,
@@ -59,6 +59,14 @@ export default function DashboardControls({
   hideDateControls,
 }: DashboardControlsProps) {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const commandListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (commandListRef.current) {
+      commandListRef.current.scrollTop = 0;
+    }
+  }, [searchQuery]);
 
   const activeAsset = assets.find((a) => a.symbol === selectedSymbol);
 
@@ -102,8 +110,12 @@ export default function DashboardControls({
             </PopoverTrigger>
             <PopoverContent className="w-[400px] p-0" align="start">
               <Command>
-                <CommandInput placeholder="Search asset..." />
-                <CommandList>
+                <CommandInput
+                  placeholder="Search asset..."
+                  value={searchQuery}
+                  onValueChange={setSearchQuery}
+                />
+                <CommandList ref={commandListRef}>
                   <CommandEmpty>No asset found.</CommandEmpty>
                   <CommandGroup>
                     {assets.map((asset) => (
