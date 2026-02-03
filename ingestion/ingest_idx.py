@@ -102,6 +102,7 @@ IDX_STOCKS = [
     
     # Agriculture & Plantations
     "LSIP", "AALI", "SIMP", "SGRO", "DSNG", "BWPT", "PALM", "SSMS", "JARR",
+    "RATU", "PTRO",
 ]
 
 def init_database() -> sqlite3.Connection:
