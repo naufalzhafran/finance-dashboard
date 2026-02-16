@@ -1,3 +1,4 @@
+import { Gem, Wallet, HeartPulse, Rocket } from "lucide-react";
 import { FundamentalData } from "@/lib/db";
 import { MetricCard } from "./MetricCard";
 import { PercentageBadge } from "./PercentageBadge";
@@ -26,9 +27,12 @@ export default function FundamentalsGrid({
 }: FundamentalsGridProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 animate-pulse">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {[...Array(10)].map((_, i) => (
-          <div key={i} className="h-24 bg-muted/50 rounded-xl" />
+          <div
+            key={i}
+            className="h-24 bg-secondary/50 rounded-xl animate-shimmer"
+          />
         ))}
       </div>
     );
@@ -36,7 +40,7 @@ export default function FundamentalsGrid({
 
   if (!data) {
     return (
-      <div className="p-8 text-center border border-border rounded-xl bg-background/50 backdrop-blur-sm">
+      <div className="p-8 text-center border border-border/50 rounded-xl bg-card/50 backdrop-blur-sm">
         <p className="text-muted-foreground">
           No fundamental data available for this asset.
         </p>
@@ -64,8 +68,11 @@ export default function FundamentalsGrid({
     <div className="space-y-8">
       {/* Valuation Metrics */}
       <section>
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-          <span className="text-blue-400">💎</span> Valuation
+        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2.5">
+          <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-blue-500/10">
+            <Gem className="w-4 h-4 text-blue-400" />
+          </span>
+          Valuation
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MetricCard
@@ -102,8 +109,11 @@ export default function FundamentalsGrid({
 
       {/* Profitability */}
       <section>
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-          <span className="text-emerald-400">💸</span> Profitability
+        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2.5">
+          <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/10">
+            <Wallet className="w-4 h-4 text-emerald-400" />
+          </span>
+          Profitability
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MetricCard
@@ -135,8 +145,11 @@ export default function FundamentalsGrid({
 
       {/* Financial Health */}
       <section>
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-          <span className="text-rose-400">🏥</span> Health & Cash Flow
+        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2.5">
+          <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-rose-500/10">
+            <HeartPulse className="w-4 h-4 text-rose-400" />
+          </span>
+          Health & Cash Flow
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MetricCard
@@ -164,8 +177,11 @@ export default function FundamentalsGrid({
 
       {/* Growth */}
       <section>
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-          <span className="text-amber-400">🚀</span> Growth
+        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2.5">
+          <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-500/10">
+            <Rocket className="w-4 h-4 text-amber-400" />
+          </span>
+          Growth
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MetricCard

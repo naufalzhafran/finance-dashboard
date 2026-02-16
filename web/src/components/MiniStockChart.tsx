@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { YAxis, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface PriceData {
   date: string;
@@ -67,7 +68,7 @@ export default function MiniStockChart({
 
   if (data.length === 0) {
     return (
-      <Card className="p-4 h-32 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+      <Card className="p-4 h-32 flex items-center justify-center bg-card/80 border-border/50">
         <span className="text-muted-foreground text-xs">No Data</span>
       </Card>
     );
@@ -75,12 +76,16 @@ export default function MiniStockChart({
 
   return (
     <Card
-      className="p-4 bg-background/50 backdrop-blur-sm hover:bg-background/80 transition-colors cursor-pointer border-border/50 hover:border-border"
+      className={`p-4 bg-card/80 backdrop-blur-sm border-border/50 cursor-pointer transition-all duration-300 hover:border-border group ${
+        isPositive ? "hover:glow-emerald" : "hover:glow-rose"
+      }`}
       onClick={() => router.push(`/asset/${encodeURIComponent(symbol)}`)}
     >
       <div className="flex justify-between items-start mb-2">
         <div>
-          <h3 className="font-bold text-sm tracking-tight">{symbol}</h3>
+          <h3 className="font-bold text-sm tracking-tight group-hover:text-primary transition-colors duration-200">
+            {symbol}
+          </h3>
           <p
             className="text-xs text-muted-foreground truncate max-w-[120px]"
             title={name}
@@ -93,17 +98,22 @@ export default function MiniStockChart({
             {formatPrice(lastPrice)}
           </p>
           <p
-            className={`text-xs font-medium ${
-              isPositive ? "text-emerald-500" : "text-rose-500"
+            className={`text-xs font-medium flex items-center justify-end gap-0.5 ${
+              isPositive ? "text-emerald-400" : "text-rose-400"
             }`}
           >
+            {isPositive ? (
+              <TrendingUp className="w-3 h-3" />
+            ) : (
+              <TrendingDown className="w-3 h-3" />
+            )}
             {isPositive ? "+" : ""}
             {priceChangePercent}%
           </p>
         </div>
       </div>
 
-      <div className="h-16 w-full opacity-80">
+      <div className="h-16 w-full opacity-80 group-hover:opacity-100 transition-opacity duration-300">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <defs>
@@ -116,12 +126,12 @@ export default function MiniStockChart({
               >
                 <stop
                   offset="5%"
-                  stopColor={isPositive ? "#10b981" : "#f43f5e"}
-                  stopOpacity={0.2}
+                  stopColor={isPositive ? "#22C55E" : "#F43F5E"}
+                  stopOpacity={0.3}
                 />
                 <stop
                   offset="95%"
-                  stopColor={isPositive ? "#10b981" : "#f43f5e"}
+                  stopColor={isPositive ? "#22C55E" : "#F43F5E"}
                   stopOpacity={0}
                 />
               </linearGradient>
@@ -130,7 +140,7 @@ export default function MiniStockChart({
             <Area
               type="monotone"
               dataKey="close"
-              stroke={isPositive ? "#10b981" : "#f43f5e"}
+              stroke={isPositive ? "#22C55E" : "#F43F5E"}
               strokeWidth={1.5}
               fill={`url(#gradient-${symbol})`}
             />

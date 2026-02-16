@@ -6,7 +6,7 @@ import {
   Calendar as CalendarIcon,
   Check,
   ChevronsUpDown,
-  ChevronDown,
+  Search,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -46,6 +46,14 @@ interface DashboardControlsProps {
   hideDateControls?: boolean;
 }
 
+const TIME_RANGES = [
+  { value: "1M", label: "1M" },
+  { value: "3M", label: "3M" },
+  { value: "6M", label: "6M" },
+  { value: "1Y", label: "1Y" },
+  { value: "YTD", label: "YTD" },
+];
+
 export default function DashboardControls({
   assets,
   selectedSymbol,
@@ -76,11 +84,11 @@ export default function DashboardControls({
   };
 
   return (
-    <Card className="mb-6 p-4 sticky top-[73px] z-40 backdrop-blur-xl bg-background/80 border-border">
+    <Card className="mb-6 p-4 sticky top-[73px] z-40 backdrop-blur-xl bg-card/80 border-border/50">
       <div className="flex flex-col lg:flex-row lg:items-end gap-4 flex-wrap">
         {/* Search Bar */}
         <div className="flex-1 min-w-0">
-          <label className="text-[10px] uppercase text-muted-foreground font-bold px-1 mb-1 block">
+          <label className="text-[10px] uppercase text-muted-foreground font-bold px-1 mb-1 block tracking-widest">
             Asset
           </label>
           <Popover open={open} onOpenChange={setOpen}>
@@ -89,11 +97,12 @@ export default function DashboardControls({
                 variant="outline"
                 role="combobox"
                 aria-expanded={open}
-                className="w-full justify-between"
+                className="w-full justify-between bg-secondary/50 border-border/50 hover:bg-secondary hover:border-primary/30 transition-all duration-200 cursor-pointer"
               >
                 <span className="truncate flex items-center gap-2">
                   {activeAsset ? (
                     <>
+                      <Search className="w-3.5 h-3.5 text-muted-foreground" />
                       <span>
                         {activeAsset.symbol} - {activeAsset.name}
                       </span>
@@ -102,7 +111,10 @@ export default function DashboardControls({
                       </span>
                     </>
                   ) : (
-                    "Select asset..."
+                    <>
+                      <Search className="w-3.5 h-3.5 text-muted-foreground" />
+                      Select asset...
+                    </>
                   )}
                 </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -123,12 +135,13 @@ export default function DashboardControls({
                         key={asset.id}
                         value={`${asset.symbol} ${asset.name}`}
                         onSelect={() => handleSelect(asset.symbol)}
+                        className="cursor-pointer"
                       >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
                             selectedSymbol === asset.symbol
-                              ? "opacity-100"
+                              ? "opacity-100 text-primary"
                               : "opacity-0",
                           )}
                         />
@@ -136,7 +149,7 @@ export default function DashboardControls({
                         <span className="text-muted-foreground truncate flex-1">
                           {asset.name}
                         </span>
-                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-muted rounded">
+                        <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium bg-secondary rounded">
                           {asset.currency}
                         </span>
                       </CommandItem>
@@ -151,32 +164,34 @@ export default function DashboardControls({
         {/* Controls Section */}
         {!hideDateControls && (
           <div className="flex items-end gap-3 shrink-0">
-            {/* Time Range Selector Mode */}
+            {/* Pill-style Time Range Selector */}
             {timeRange && onTimeRangeChange ? (
               <div className="grid gap-1">
-                <label className="text-[10px] uppercase text-muted-foreground font-bold px-1">
+                <label className="text-[10px] uppercase text-muted-foreground font-bold px-1 tracking-widest">
                   Time Window
                 </label>
-                <div className="relative">
-                  <select
-                    value={timeRange}
-                    onChange={(e) => onTimeRangeChange(e.target.value)}
-                    className="appearance-none h-10 w-[180px] bg-background border border-input rounded-md px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="1M">1 Month</option>
-                    <option value="3M">3 Months</option>
-                    <option value="6M">6 Months</option>
-                    <option value="1Y">1 Year</option>
-                    <option value="YTD">Year to Date</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" />
+                <div className="flex p-1 bg-secondary/50 rounded-lg border border-border/50">
+                  {TIME_RANGES.map((range) => (
+                    <button
+                      key={range.value}
+                      onClick={() => onTimeRangeChange(range.value)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer",
+                        timeRange === range.value
+                          ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                          : "text-muted-foreground hover:text-foreground hover:bg-secondary",
+                      )}
+                    >
+                      {range.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             ) : startDate && endDate && onDateChange ? (
               // Date Pickers Mode
               <>
                 <div className="grid gap-1">
-                  <label className="text-[10px] uppercase text-muted-foreground font-bold px-1">
+                  <label className="text-[10px] uppercase text-muted-foreground font-bold px-1 tracking-widest">
                     Start
                   </label>
                   <Popover>
@@ -184,7 +199,7 @@ export default function DashboardControls({
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-[130px] justify-start text-left font-normal",
+                          "w-[130px] justify-start text-left font-normal cursor-pointer",
                           !startDate && "text-muted-foreground",
                         )}
                       >
@@ -211,7 +226,7 @@ export default function DashboardControls({
                 </div>
 
                 <div className="grid gap-1">
-                  <label className="text-[10px] uppercase text-muted-foreground font-bold px-1">
+                  <label className="text-[10px] uppercase text-muted-foreground font-bold px-1 tracking-widest">
                     End
                   </label>
                   <Popover>
@@ -219,7 +234,7 @@ export default function DashboardControls({
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-[130px] justify-start text-left font-normal",
+                          "w-[130px] justify-start text-left font-normal cursor-pointer",
                           !endDate && "text-muted-foreground",
                         )}
                       >

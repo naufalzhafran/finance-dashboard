@@ -2,36 +2,49 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Globe,
+  Banknote,
+  Landmark,
+  Flame,
+  Building2,
+  BarChart3,
+} from "lucide-react";
 import MiniStockChart from "@/components/MiniStockChart";
 import DashboardControls from "@/components/DashboardControls";
 import ResponsiveHeader from "@/components/ResponsiveHeader";
 import { Asset, SimplePriceData, TimeRange } from "@/types";
 
 // Group definitions for the dashboard
-// Group definitions for the dashboard
 const DASHBOARD_GROUPS = [
   {
     title: "Market Overview",
+    icon: Globe,
     symbols: ["^JKSE", "^GSPC", "^IXIC", "^N225", "BTC-USD"],
   },
   {
     title: "Currencies (vs IDR)",
+    icon: Banknote,
     symbols: ["USDIDR=X", "EURIDR=X", "GBPIDR=X", "JPYIDR=X", "SGDIDR=X"],
   },
   {
     title: "Commodities",
+    icon: Flame,
     symbols: ["GC=F", "CL=F", "CPO=F", "HG=F", "NG=F"],
   },
   {
     title: "Indonesian Banking",
+    icon: Landmark,
     symbols: ["BBCA", "BBRI", "BMRI", "BBNI", "BRIS"],
   },
   {
     title: "Indonesian Energy & Resources",
+    icon: BarChart3,
     symbols: ["ADRO", "ITMG", "PTBA", "UNTR", "MEDC", "ANTM", "INCO", "PGAS"],
   },
   {
     title: "Indonesian BUMN",
+    icon: Building2,
     symbols: ["TLKM", "SMGR", "JSMR", "BBTN", "WIKA", "PTPP", "GIAA", "KRAS"],
   },
 ];
@@ -144,11 +157,14 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent relative overflow-x-hidden">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
       {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent/20 rounded-full blur-[100px]" />
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse-glow" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-accent/10 rounded-full blur-[120px] animate-pulse-glow" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px]" />
+        {/* Grid pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-50" />
       </div>
 
       <ResponsiveHeader />
@@ -168,11 +184,16 @@ export default function Home() {
 
         {loading && Object.keys(marketData).length === 0 ? (
           <div className="flex items-center justify-center h-64">
-            <div className="w-16 h-16 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-16 h-16 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+              <p className="text-muted-foreground text-sm font-medium tracking-wide">
+                Loading market data...
+              </p>
+            </div>
           </div>
         ) : (
           <>
-            {DASHBOARD_GROUPS.map((group) => {
+            {DASHBOARD_GROUPS.map((group, groupIndex) => {
               // Filter symbols that exist in our loaded assets AND have data
               const visibleSymbols = group.symbols.filter((s) =>
                 assets.some((a) => a.symbol === s),
@@ -180,10 +201,18 @@ export default function Home() {
 
               if (visibleSymbols.length === 0) return null;
 
+              const Icon = group.icon;
+
               return (
-                <section key={group.title} className="animate-fade-in">
-                  <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <span className="w-1 h-6 bg-primary rounded-full" />
+                <section
+                  key={group.title}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${groupIndex * 100}ms` }}
+                >
+                  <h2 className="text-lg font-bold mb-4 flex items-center gap-2.5">
+                    <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
+                      <Icon className="w-4 h-4 text-primary" />
+                    </span>
                     {group.title}
                   </h2>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -217,7 +246,7 @@ export default function Home() {
 
             {/* If no data at all and not loading */}
             {!loading && Object.keys(marketData).length === 0 && (
-              <div className="text-center p-12 border border-dashed border-border rounded-xl">
+              <div className="text-center p-12 border border-dashed border-border rounded-xl bg-card/50">
                 <p className="text-muted-foreground">
                   No market data available. Run ingestion scripts to populate
                   the dashboard.
@@ -227,6 +256,15 @@ export default function Home() {
           </>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-border/50 mt-12 bg-card/30 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <p className="text-muted-foreground text-sm text-center">
+            Antigravity Finance Dashboard • Data from Yahoo Finance
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

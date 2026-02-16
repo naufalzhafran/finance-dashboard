@@ -1,3 +1,4 @@
+import { Star, Skull } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
   getRSIStatus,
@@ -49,19 +50,26 @@ export default function TechnicalIndicators({
   const colorMap: Record<string, string> = {
     emerald: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
     rose: "bg-rose-500/20 text-rose-400 border-rose-500/30",
-    slate: "bg-slate-500/20 text-slate-400 border-slate-500/30",
-    gray: "bg-slate-500/20 text-slate-400 border-slate-500/30",
+    slate: "bg-secondary text-muted-foreground border-border",
+    gray: "bg-secondary text-muted-foreground border-border",
+  };
+
+  const valueColorMap: Record<string, string> = {
+    emerald: "text-emerald-400",
+    rose: "text-rose-400",
+    slate: "text-foreground",
+    gray: "text-foreground",
   };
 
   return (
-    <Card className="p-6 bg-background/50 backdrop-blur-sm">
+    <Card className="p-6 bg-card/80 backdrop-blur-sm border-border/50">
       <h3 className="text-lg font-semibold mb-4">Technical Indicators</h3>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* RSI */}
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+        <div className="bg-secondary/50 rounded-xl p-4 border border-border/50">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-slate-400 text-sm flex items-center">
+            <p className="text-muted-foreground text-sm flex items-center">
               RSI (14)
               <InfoTooltip {...INDICATOR_HELP.rsi} />
             </p>
@@ -72,22 +80,16 @@ export default function TechnicalIndicators({
             </span>
           </div>
           <p
-            className={`font-mono text-2xl font-semibold ${
-              rsiStatus.color === "rose"
-                ? "text-rose-400"
-                : rsiStatus.color === "emerald"
-                  ? "text-emerald-400"
-                  : "text-slate-200"
-            }`}
+            className={`font-mono text-2xl font-semibold ${valueColorMap[rsiStatus.color]}`}
           >
             {rsi !== null ? rsi.toFixed(1) : "N/A"}
           </p>
         </div>
 
         {/* MACD */}
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+        <div className="bg-secondary/50 rounded-xl p-4 border border-border/50">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-slate-400 text-sm flex items-center">
+            <p className="text-muted-foreground text-sm flex items-center">
               MACD
               <InfoTooltip {...INDICATOR_HELP.macd} />
             </p>
@@ -98,22 +100,16 @@ export default function TechnicalIndicators({
             </span>
           </div>
           <p
-            className={`font-mono text-2xl font-semibold ${
-              macdTrend.color === "rose"
-                ? "text-rose-400"
-                : macdTrend.color === "emerald"
-                  ? "text-emerald-400"
-                  : "text-slate-200"
-            }`}
+            className={`font-mono text-2xl font-semibold ${valueColorMap[macdTrend.color]}`}
           >
             {macd !== null ? macd.toFixed(2) : "N/A"}
           </p>
         </div>
 
         {/* Bollinger Band Position */}
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+        <div className="bg-secondary/50 rounded-xl p-4 border border-border/50">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-slate-400 text-sm flex items-center">
+            <p className="text-muted-foreground text-sm flex items-center">
               Bollinger
               <InfoTooltip {...INDICATOR_HELP.bollinger} />
             </p>
@@ -123,7 +119,7 @@ export default function TechnicalIndicators({
               {bollingerPos.position}
             </span>
           </div>
-          <p className="text-slate-400 text-sm font-mono">
+          <p className="text-muted-foreground text-sm font-mono">
             {bollingerUpper !== null && bollingerLower !== null ? (
               <>
                 U: {bollingerUpper.toFixed(0)} / L: {bollingerLower.toFixed(0)}
@@ -135,9 +131,9 @@ export default function TechnicalIndicators({
         </div>
 
         {/* MA Trend */}
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+        <div className="bg-secondary/50 rounded-xl p-4 border border-border/50">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-slate-400 text-sm flex items-center">
+            <p className="text-muted-foreground text-sm flex items-center">
               MA Trend
               <InfoTooltip {...INDICATOR_HELP.maTrend} />
             </p>
@@ -147,7 +143,7 @@ export default function TechnicalIndicators({
               {maTrend.trend}
             </span>
           </div>
-          <p className="text-slate-400 text-sm font-mono">
+          <p className="text-muted-foreground text-sm font-mono">
             {sma50 !== null ? `50d: ${sma50.toFixed(0)}` : "N/A"}
             {sma200 !== null ? ` / 200d: ${sma200.toFixed(0)}` : ""}
           </p>
@@ -164,9 +160,15 @@ export default function TechnicalIndicators({
           }`}
         >
           <div className="flex items-center gap-3">
-            <span className="text-2xl">
-              {latestCrossover.type === "golden" ? "✨" : "💀"}
-            </span>
+            {latestCrossover.type === "golden" ? (
+              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
+                <Star className="w-5 h-5 text-amber-400" />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
+                <Skull className="w-5 h-5 text-purple-400" />
+              </div>
+            )}
             <div className="flex-1">
               <p
                 className={`font-semibold flex items-center ${
@@ -185,7 +187,7 @@ export default function TechnicalIndicators({
                     : INDICATOR_HELP.deathCross)}
                 />
               </p>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 SMA 50 crossed{" "}
                 {latestCrossover.type === "golden" ? "above" : "below"} SMA 200
                 on {latestCrossover.date}

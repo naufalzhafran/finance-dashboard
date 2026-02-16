@@ -2,6 +2,14 @@
 
 import { useState, useEffect, useCallback, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Activity,
+  Shield,
+  Landmark,
+  FileBarChart,
+  BarChart3,
+  AlertTriangle,
+} from "lucide-react";
 import ResponsiveHeader from "@/components/ResponsiveHeader";
 import StockChart from "@/components/StockChart";
 import DashboardControls from "@/components/DashboardControls";
@@ -359,11 +367,12 @@ export default function AssetDetail({
   };
 
   return (
-    <div className="min-h-screen bg-transparent relative overflow-x-hidden">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
       {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent/20 rounded-full blur-[100px]" />
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse-glow" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-accent/10 rounded-full blur-[120px] animate-pulse-glow" />
+        <div className="absolute inset-0 bg-grid-pattern opacity-50" />
       </div>
 
       <ResponsiveHeader
@@ -379,7 +388,7 @@ export default function AssetDetail({
         {error && (
           <div className="mb-6 bg-destructive/10 border border-destructive/20 rounded-xl p-4 animate-fade-in">
             <p className="text-destructive flex items-center gap-2 font-medium">
-              <span>⚠️</span>
+              <AlertTriangle className="w-4 h-4 shrink-0" />
               {error}
             </p>
           </div>
@@ -398,10 +407,10 @@ export default function AssetDetail({
           {/* Chart Section */}
           <div>
             {priceLoading ? (
-              <Card className="h-[500px] flex items-center justify-center bg-background/50 backdrop-blur-sm">
-                <div className="flex flex-col items-center gap-4 animate-pulse">
+              <Card className="h-[500px] flex items-center justify-center bg-card/80 border-border/50">
+                <div className="flex flex-col items-center gap-4">
                   <div className="w-16 h-16 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
-                  <p className="text-muted-foreground font-medium tracking-wide">
+                  <p className="text-muted-foreground font-medium tracking-wide text-sm">
                     Analysing market data...
                   </p>
                 </div>
@@ -415,10 +424,10 @@ export default function AssetDetail({
                 isStock={isStock}
               />
             ) : (
-              <Card className="h-[500px] flex items-center justify-center text-center p-8 bg-background/50 backdrop-blur-sm">
+              <Card className="h-[500px] flex items-center justify-center text-center p-8 bg-card/80 border-border/50">
                 <div className="max-w-md">
-                  <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-6 ring-1 ring-white/10">
-                    <span className="text-4xl grayscale opacity-50">📊</span>
+                  <div className="w-20 h-20 bg-secondary rounded-2xl flex items-center justify-center mx-auto mb-6 border border-border/50">
+                    <BarChart3 className="w-10 h-10 text-muted-foreground" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2">
                     Select an Asset
@@ -449,7 +458,10 @@ export default function AssetDetail({
             priceData.length > 0 && (
               <>
                 <div className="animate-fade-in">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10">
+                      <Activity className="w-4.5 h-4.5 text-accent" />
+                    </span>
                     <h2 className="text-xl font-bold">Technical Analysis</h2>
                   </div>
                   <TechnicalIndicators
@@ -484,7 +496,10 @@ export default function AssetDetail({
             priceData.length > 0 && (
               <>
                 <div className="animate-fade-in">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10">
+                      <Shield className="w-4.5 h-4.5 text-amber-500" />
+                    </span>
                     <h2 className="text-xl font-bold">Risk & Volatility</h2>
                   </div>
                   <RiskAnalytics
@@ -521,7 +536,10 @@ export default function AssetDetail({
           {/* Fundamentals Section - Only for Stocks */}
           {isStock && selectedSymbol && (
             <div className="animate-fade-in space-y-8">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5 mb-4">
+                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10">
+                  <Landmark className="w-4.5 h-4.5 text-emerald-500" />
+                </span>
                 <h2 className="text-xl font-bold">Fundamentals</h2>
               </div>
 
@@ -556,7 +574,10 @@ export default function AssetDetail({
           {/* Financial Statements Section - Only for Stocks */}
           {isStock && selectedSymbol && (
             <div className="animate-fade-in">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5 mb-4">
+                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10">
+                  <FileBarChart className="w-4.5 h-4.5 text-purple-500" />
+                </span>
                 <h2 className="text-xl font-bold">Financial Statements</h2>
               </div>
               <FinancialsView
@@ -569,7 +590,7 @@ export default function AssetDetail({
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/5 mt-12 bg-background/30">
+      <footer className="relative z-10 border-t border-border/50 mt-12 bg-card/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <p className="text-muted-foreground text-sm text-center">
             Antigravity Finance Dashboard • Data from Yahoo Finance

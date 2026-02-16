@@ -44,7 +44,7 @@ const candlestickWhiskerDataKey = (entry: any): [number, number] => {
 
 // Candlestick shape component
 const Candlestick = (props: any) => {
-  const color = props.open < props.close ? "#10b981" : "#f43f5e";
+  const color = props.open < props.close ? "#22c55e" : "#f43f5e";
   return <Rectangle {...props} fill={color} />;
 };
 
@@ -83,7 +83,7 @@ export default function StockChart({
 
   if (data.length === 0) {
     return (
-      <Card className="flex items-center justify-center h-96 bg-background/50 backdrop-blur-sm">
+      <Card className="flex items-center justify-center h-96 bg-card/80 backdrop-blur-sm border-border/50">
         <p className="text-muted-foreground">No price data available</p>
       </Card>
     );
@@ -155,7 +155,7 @@ export default function StockChart({
     if (active && payload && payload.length) {
       const d = payload[0].payload;
       return (
-        <Card className="p-3 !bg-background/95 border-border shadow-xl min-w-[200px]">
+        <Card className="p-3 !bg-card/95 border-border/50 shadow-xl min-w-[200px]">
           <p className="text-muted-foreground text-sm mb-2 pb-2 border-b border-border">
             {d.fullDate}
           </p>
@@ -223,7 +223,7 @@ export default function StockChart({
   };
 
   return (
-    <Card className="p-6 bg-background/50 backdrop-blur-sm">
+    <Card className="p-6 bg-card/80 backdrop-blur-sm border-border/50">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
@@ -281,14 +281,14 @@ export default function StockChart({
             </div>
 
             {/* Chart Type Selector */}
-            <div className="flex p-1 bg-muted rounded-lg border border-border overflow-x-auto max-w-full">
+            <div className="flex p-1 bg-secondary/50 rounded-lg border border-border/50 overflow-x-auto max-w-full">
               {(["line", "area", "candlestick"] as ChartType[]).map((type) => (
                 <Button
                   key={type}
                   variant={chartType === type ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setChartType(type)}
-                  className="capitalize shrink-0"
+                  className="capitalize shrink-0 cursor-pointer"
                 >
                   {type}
                 </Button>
@@ -377,12 +377,12 @@ export default function StockChart({
               <Line
                 type="monotone"
                 dataKey="close"
-                stroke={isPositive ? "#10b981" : "#f43f5e"}
+                stroke={isPositive ? "#22c55e" : "#f43f5e"}
                 strokeWidth={2}
                 dot={false}
                 activeDot={{
                   r: 6,
-                  fill: isPositive ? "#10b981" : "#f43f5e",
+                  fill: isPositive ? "#22c55e" : "#f43f5e",
                   strokeWidth: 0,
                 }}
               />
@@ -658,7 +658,7 @@ export default function StockChart({
                 className="w-4 h-0.5 bg-orange-400"
                 style={{ borderTop: "2px dashed" }}
               />
-              <span className="text-slate-400">SMA 50</span>
+              <span className="text-muted-foreground">SMA 50</span>
             </div>
           )}
           {showSMA200 && (
@@ -667,13 +667,13 @@ export default function StockChart({
                 className="w-4 h-0.5 bg-cyan-400"
                 style={{ borderTop: "2px dashed" }}
               />
-              <span className="text-slate-400">SMA 200</span>
+              <span className="text-muted-foreground">SMA 200</span>
             </div>
           )}
           {showBollinger && (
             <div className="flex items-center gap-2">
               <div className="w-4 h-3 bg-purple-500/20 border border-purple-500/50 rounded-sm" />
-              <span className="text-slate-400">Bollinger Bands</span>
+              <span className="text-muted-foreground">Bollinger Bands</span>
             </div>
           )}
         </div>
@@ -681,8 +681,8 @@ export default function StockChart({
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-          <p className="text-slate-400 text-sm mb-1 flex items-center">
+        <div className="bg-secondary/50 rounded-xl p-4 border border-border/50">
+          <p className="text-muted-foreground text-sm mb-1 flex items-center">
             High
             <InfoTooltip {...INDICATOR_HELP.high} />
           </p>
@@ -690,8 +690,8 @@ export default function StockChart({
             {formatPrice(Math.max(...data.map((d) => d.high)))}
           </p>
         </div>
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-          <p className="text-slate-400 text-sm mb-1 flex items-center">
+        <div className="bg-secondary/50 rounded-xl p-4 border border-border/50">
+          <p className="text-muted-foreground text-sm mb-1 flex items-center">
             Low
             <InfoTooltip {...INDICATOR_HELP.low} />
           </p>
@@ -700,8 +700,8 @@ export default function StockChart({
           </p>
         </div>
         {isStock && (
-          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-            <p className="text-slate-400 text-sm mb-1 flex items-center">
+          <div className="bg-secondary/50 rounded-xl p-4 border border-border/50">
+            <p className="text-muted-foreground text-sm mb-1 flex items-center">
               Avg Volume
               <InfoTooltip {...INDICATOR_HELP.avgVolume} />
             </p>
@@ -712,8 +712,8 @@ export default function StockChart({
             </p>
           </div>
         )}
-        <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-          <p className="text-slate-400 text-sm mb-1 flex items-center">
+        <div className="bg-secondary/50 rounded-xl p-4 border border-border/50">
+          <p className="text-muted-foreground text-sm mb-1 flex items-center">
             Data Points
             <InfoTooltip {...INDICATOR_HELP.dataPoints} />
           </p>

@@ -1,32 +1,57 @@
+"use client";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface PercentageBadgeProps {
-  value: number | null | undefined;
+  /** Already-computed percentage value (e.g. 5.23 for +5.23%) */
+  percentage?: number | null;
+  /** Raw decimal ratio (e.g. 0.0523 for 5.23%) — multiplied by 100 internally */
+  value?: number | null;
+  className?: string;
 }
 
-export function PercentageBadge({ value }: PercentageBadgeProps) {
-  if (value === null || value === undefined) {
-    return <span className="text-muted-foreground">—</span>;
+export function PercentageBadge({
+  percentage,
+  value,
+  className,
+}: PercentageBadgeProps) {
+  // Support both props: `percentage` is already in % form, `value` is raw ratio
+  const pct = percentage ?? (value != null ? value * 100 : null);
+
+  if (pct === null || pct === undefined || isNaN(pct)) {
+    return (
+      <Badge
+        variant="outline"
+        className={cn(
+          "font-mono px-2 py-0.5 border-0 bg-muted text-muted-foreground",
+          className,
+        )}
+      >
+        N/A
+      </Badge>
+    );
   }
 
-  // Multiply by 100 to display as percentage if the raw value is a ratio (e.g. 0.05 -> 5%)
-  const percentage = value * 100;
-  const isPositive = percentage > 0;
-  const isNegative = percentage < 0;
+  const isPositive = pct > 0;
+  const isNegative = pct < 0;
 
   return (
     <Badge
       variant="outline"
       className={cn(
-        "font-mono px-2 py-0.5 border-0",
-        isPositive && "bg-emerald-500/10 text-emerald-500",
-        isNegative && "bg-rose-500/10 text-rose-500",
+        "font-mono px-2 py-0.5 border-0 flex items-center gap-1",
+        isPositive && "bg-emerald-500/10 text-emerald-400",
+        isNegative && "bg-rose-500/10 text-rose-400",
         !isPositive && !isNegative && "bg-muted text-muted-foreground",
+        className,
       )}
     >
+      {isPositive && <TrendingUp className="w-3 h-3" />}
+      {isNegative && <TrendingDown className="w-3 h-3" />}
+      {!isPositive && !isNegative && <Minus className="w-3 h-3" />}
       {isPositive && "+"}
-      {percentage.toFixed(2)}%
+      {pct.toFixed(2)}%
     </Badge>
   );
 }
