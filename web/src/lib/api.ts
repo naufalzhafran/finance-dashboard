@@ -77,3 +77,20 @@ export function getFinancialsCashflow(symbol: string, period: "annual" | "quarte
     { next: { revalidate: 3600 } },
   );
 }
+
+export function getTickers() {
+  return apiFetch<import("@/types").Asset[]>("/tickers", { cache: "no-store" });
+}
+
+export function addTicker(data: import("@/types").TickerCreate) {
+  return apiFetch<import("@/types").Asset>("/tickers", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function removeTicker(symbol: string) {
+  return apiFetch<{ detail: string }>(`/tickers/${encodeURIComponent(symbol)}`, {
+    method: "DELETE",
+  });
+}

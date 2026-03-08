@@ -1,18 +1,14 @@
 """PostgreSQL database utilities for ingestion scripts."""
 
-import os
 from contextlib import contextmanager
 from datetime import date
 
-from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-load_dotenv()
+from app.config import settings
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/finance_db")
-
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+engine = create_engine(settings.database_url, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine)
 
 
@@ -29,7 +25,8 @@ def get_session():
         session.close()
 
 
-def get_or_create_asset(session, symbol: str, name: str, asset_type: str, currency: str) -> int:
+def get_or_create_asset(session, symbol: str, name: str, asset_type: str, currency: str,
+                        yahoo_symbol: str | None = None) -> int:
     """Return asset id, inserting if missing."""
     row = session.execute(
         text("SELECT id FROM assets WHERE symbol = :s"), {"s": symbol.upper()}
@@ -37,19 +34,27 @@ def get_or_create_asset(session, symbol: str, name: str, asset_type: str, curren
 
     if row:
         session.execute(
-            text("UPDATE assets SET name = :n, currency = :c WHERE symbol = :s"),
-            {"n": name, "c": currency, "s": symbol.upper()},
+            text("UPDATE assets SET name = :n, currency = :c, yahoo_symbol = COALESCE(:y, yahoo_symbol) WHERE symbol = :s"),
+            {"n": name, "c": currency, "y": yahoo_symbol, "s": symbol.upper()},
         )
         return row[0]
 
     result = session.execute(
         text(
-            "INSERT INTO assets (symbol, name, asset_type, currency) "
-            "VALUES (:s, :n, :t, :c) RETURNING id"
+            "INSERT INTO assets (symbol, name, asset_type, currency, yahoo_symbol) "
+            "VALUES (:s, :n, :t, :c, :y) RETURNING id"
         ),
-        {"s": symbol.upper(), "n": name, "t": asset_type, "c": currency},
+        {"s": symbol.upper(), "n": name, "t": asset_type, "c": currency, "y": yahoo_symbol},
     )
     return result.fetchone()[0]
+
+
+def get_tracked_assets(session) -> list[dict]:
+    """Return all tracked assets for DB-driven ingestion."""
+    rows = session.execute(
+        text("SELECT symbol, yahoo_symbol, asset_type, currency FROM assets WHERE tracked = true")
+    ).fetchall()
+    return [{"symbol": r[0], "yahoo_symbol": r[1], "asset_type": r[2], "currency": r[3]} for r in rows]
 
 
 def upsert_price(session, asset_id: int, price_date: date, open_: float | None,

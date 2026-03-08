@@ -13,7 +13,15 @@ export interface Asset {
   name: string | null;
   asset_type: string;
   currency: string;
+  yahoo_symbol: string | null;
+  tracked: boolean;
   created_at?: string;
+}
+
+export interface TickerCreate {
+  yahoo_symbol: string;
+  asset_type: string;
+  currency: string;
 }
 
 // ============================================================================

@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(assets.router, prefix="/api")
+app.include_router(assets.tickers_router, prefix="/api")
 app.include_router(prices.router, prefix="/api")
 app.include_router(fundamentals.router, prefix="/api")
 app.include_router(financials.router, prefix="/api")

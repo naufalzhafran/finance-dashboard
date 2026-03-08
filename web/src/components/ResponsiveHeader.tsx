@@ -1,6 +1,6 @@
 "use client";
 
-import { Book, Menu, TrendingUp, X } from "lucide-react";
+import { Book, Menu, TrendingUp, X, ListPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -46,6 +46,13 @@ export default function ResponsiveHeader({
           {/* Desktop Navigation */}
           <div className="hidden sm:flex items-center gap-4">
             <button
+              onClick={() => router.push("/tickers")}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary/50 border border-border/50 hover:bg-secondary hover:border-primary/30 transition-all duration-200 text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              <ListPlus className="w-4 h-4" />
+              <span>Tickers</span>
+            </button>
+            <button
               onClick={() => router.push("/glossary")}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary/50 border border-border/50 hover:bg-secondary hover:border-primary/30 transition-all duration-200 text-sm font-medium text-muted-foreground hover:text-foreground cursor-pointer"
             >
@@ -76,10 +83,14 @@ export default function ResponsiveHeader({
           <div className="sm:hidden pt-4 pb-2 animate-fade-in">
             <div className="space-y-2">
               <button
-                onClick={() => {
-                  router.push("/glossary");
-                  setIsMenuOpen(false);
-                }}
+                onClick={() => { router.push("/tickers"); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary/30 active:bg-secondary transition-colors text-sm font-medium text-foreground cursor-pointer"
+              >
+                <ListPlus className="w-4 h-4 text-primary" />
+                <span>Tickers</span>
+              </button>
+              <button
+                onClick={() => { router.push("/glossary"); setIsMenuOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary/30 active:bg-secondary transition-colors text-sm font-medium text-foreground cursor-pointer"
               >
                 <Book className="w-4 h-4 text-primary" />

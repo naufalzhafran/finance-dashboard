@@ -1,7 +1,7 @@
 [project]
 name = "finance-api"
 version = "2.0.0"
-description = "Indonesia Economy Dashboard - FastAPI Backend"
+description = "Indonesia Economy Dashboard - FastAPI Backend & Data Ingestion"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",
@@ -12,7 +12,12 @@ dependencies = [
     "pydantic>=2.9.0",
     "pydantic-settings>=2.6.0",
     "python-dotenv>=1.0.0",
+    "yfinance>=0.2.36",
+    "pandas>=2.0.0",
 ]
+
+[project.scripts]
+ingest = "ingestion.ingest:main"
 
 [build-system]
 requires = ["hatchling"]
