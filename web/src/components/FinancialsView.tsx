@@ -5,7 +5,7 @@ import {
   FinancialsIncome,
   FinancialsBalance,
   FinancialsCashflow,
-} from "@/lib/db";
+} from "@/types";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { FundamentalData } from "@/lib/db";
+import { FundamentalData } from "@/types";
 
 interface DividendAnalyticsProps {
   data: FundamentalData | null;

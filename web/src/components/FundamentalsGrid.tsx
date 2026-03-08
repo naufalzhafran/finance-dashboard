@@ -1,5 +1,5 @@
 import { Gem, Wallet, HeartPulse, Rocket } from "lucide-react";
-import { FundamentalData } from "@/lib/db";
+import { FundamentalData } from "@/types";
 import { MetricCard } from "./MetricCard";
 import { PercentageBadge } from "./PercentageBadge";
 

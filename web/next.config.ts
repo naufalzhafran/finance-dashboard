@@ -51,6 +51,11 @@ const nextConfig: NextConfig = {
   // Enable production source maps for better debugging
   productionBrowserSourceMaps: false,
 
+  // Expose API_URL to server components
+  env: {
+    API_URL: process.env.API_URL || "http://localhost:8000/api",
+  },
+
   // Optimize package imports
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts", "date-fns"],

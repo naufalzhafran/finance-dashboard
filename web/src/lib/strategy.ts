@@ -1,4 +1,4 @@
-import { FundamentalData } from "@/lib/db";
+import { FundamentalData } from "@/types";
 import {
   calculateSMA,
   calculateRSI,

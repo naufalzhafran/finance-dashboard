@@ -1,33 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFundamentals, getAssetBySymbol } from "@/lib/db";
+import { getFundamentals } from "@/lib/api";
 
-type RouteContext = {
-  params: Promise<{ symbol: string }>;
-};
+type RouteContext = { params: Promise<{ symbol: string }> };
 
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { symbol } = await context.params;
-
-    const asset = getAssetBySymbol(symbol);
-    if (!asset) {
-      return NextResponse.json(
-        { error: `Asset ${symbol} not found` },
-        { status: 404 },
-      );
-    }
-
-    const fundamentals = getFundamentals(symbol);
-
-    return NextResponse.json({
-      asset,
-      fundamentals: fundamentals || null,
-    });
+    const data = await getFundamentals(symbol);
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching fundamentals:", error);
+    const is404 = error instanceof Error && error.message.includes("404");
     return NextResponse.json(
-      { error: "Failed to fetch fundamentals data" },
-      { status: 500 },
+      { error: "Failed to fetch fundamentals", message: error instanceof Error ? error.message : "Unknown" },
+      { status: is404 ? 404 : 500 },
     );
   }
 }

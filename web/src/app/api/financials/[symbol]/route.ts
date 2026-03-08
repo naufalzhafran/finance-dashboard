@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFinancials } from "@/lib/db";
+import { getFinancialsIncome, getFinancialsBalance, getFinancialsCashflow } from "@/lib/api";
 
 export async function GET(
   request: NextRequest,
@@ -7,40 +7,22 @@ export async function GET(
 ) {
   try {
     const { symbol } = await params;
-    const searchParams = request.nextUrl.searchParams;
-    const type = searchParams.get("type") as
-      | "income"
-      | "balance"
-      | "cashflow"
-      | null;
-    const period = searchParams.get("period") as "annual" | "quarterly" | null;
-
-    if (!symbol) {
-      return NextResponse.json(
-        { error: "Symbol is required" },
-        { status: 400 },
-      );
-    }
+    const sp = request.nextUrl.searchParams;
+    const type = sp.get("type") as "income" | "balance" | "cashflow" | null;
+    const period = (sp.get("period") || "annual") as "annual" | "quarterly";
 
     if (!type || !["income", "balance", "cashflow"].includes(type)) {
-      return NextResponse.json(
-        { error: "Valid type (income, balance, cashflow) is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Valid type (income, balance, cashflow) is required" }, { status: 400 });
     }
 
-    const data = getFinancials(
-      decodeURIComponent(symbol),
-      type,
-      period || "annual",
-    );
+    let data;
+    if (type === "income") data = await getFinancialsIncome(symbol, period);
+    else if (type === "balance") data = await getFinancialsBalance(symbol, period);
+    else data = await getFinancialsCashflow(symbol, period);
 
     return NextResponse.json({ data });
   } catch (error) {
     console.error("Error fetching financials:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch financials" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch financials" }, { status: 500 });
   }
 }

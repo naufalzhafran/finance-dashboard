@@ -12,8 +12,8 @@ interface ResponsiveHeaderProps {
 }
 
 export default function ResponsiveHeader({
-  title = "Finance Dashboard",
-  subtitle = "Market Overview",
+  title = "Indonesia Economy",
+  subtitle = "Market Intelligence Dashboard",
 }: ResponsiveHeaderProps) {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
