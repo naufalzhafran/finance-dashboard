@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 from datetime import date
+from typing import Optional
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
@@ -26,7 +27,7 @@ def get_session():
 
 
 def get_or_create_asset(session, symbol: str, name: str, asset_type: str, currency: str,
-                        yahoo_symbol: str | None = None) -> int:
+                        yahoo_symbol: Optional[str] = None) -> int:
     """Return asset id, inserting if missing."""
     row = session.execute(
         text("SELECT id FROM assets WHERE symbol = :s"), {"s": symbol.upper()}
@@ -57,8 +58,8 @@ def get_tracked_assets(session) -> list[dict]:
     return [{"symbol": r[0], "yahoo_symbol": r[1], "asset_type": r[2], "currency": r[3]} for r in rows]
 
 
-def upsert_price(session, asset_id: int, price_date: date, open_: float | None,
-                 high: float | None, low: float | None, close: float | None, volume: int | None):
+def upsert_price(session, asset_id: int, price_date: date, open_: Optional[float] = None,
+                 high: Optional[float] = None, low: Optional[float] = None, close: Optional[float] = None, volume: Optional[int] = None):
     session.execute(
         text("""
             INSERT INTO price_history (asset_id, date, open, high, low, close, volume)

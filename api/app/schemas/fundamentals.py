@@ -1,42 +1,45 @@
+from __future__ import annotations
+
 from datetime import date
+from typing import Optional
 from pydantic import BaseModel
 from app.schemas.asset import AssetSchema
 
 
 class FundamentalsSchema(BaseModel):
-    id: int | None = None
-    asset_id: int | None = None
-    date: date | None = None
-    market_cap: float | None = None
-    enterprise_value: float | None = None
-    trailing_pe: float | None = None
-    forward_pe: float | None = None
-    peg_ratio: float | None = None
-    price_to_book: float | None = None
-    profit_margins: float | None = None
-    operating_margins: float | None = None
-    return_on_assets: float | None = None
-    return_on_equity: float | None = None
-    revenue_growth: float | None = None
-    earnings_growth: float | None = None
-    debt_to_equity: float | None = None
-    total_cash: float | None = None
-    total_debt: float | None = None
-    total_revenue: float | None = None
-    gross_profits: float | None = None
-    free_cashflow: float | None = None
-    operating_cashflow: float | None = None
-    trailing_eps: float | None = None
-    forward_eps: float | None = None
-    price_to_sales: float | None = None
-    dividend_yield: float | None = None
-    dividend_rate: float | None = None
-    payout_ratio: float | None = None
-    five_year_avg_dividend_yield: float | None = None
+    id: Optional[int] = None
+    asset_id: Optional[int] = None
+    date: Optional[date] = None
+    market_cap: Optional[float] = None
+    enterprise_value: Optional[float] = None
+    trailing_pe: Optional[float] = None
+    forward_pe: Optional[float] = None
+    peg_ratio: Optional[float] = None
+    price_to_book: Optional[float] = None
+    profit_margins: Optional[float] = None
+    operating_margins: Optional[float] = None
+    return_on_assets: Optional[float] = None
+    return_on_equity: Optional[float] = None
+    revenue_growth: Optional[float] = None
+    earnings_growth: Optional[float] = None
+    debt_to_equity: Optional[float] = None
+    total_cash: Optional[float] = None
+    total_debt: Optional[float] = None
+    total_revenue: Optional[float] = None
+    gross_profits: Optional[float] = None
+    free_cashflow: Optional[float] = None
+    operating_cashflow: Optional[float] = None
+    trailing_eps: Optional[float] = None
+    forward_eps: Optional[float] = None
+    price_to_sales: Optional[float] = None
+    dividend_yield: Optional[float] = None
+    dividend_rate: Optional[float] = None
+    payout_ratio: Optional[float] = None
+    five_year_avg_dividend_yield: Optional[float] = None
 
     model_config = {"from_attributes": True}
 
 
 class FundamentalsResponse(BaseModel):
     asset: AssetSchema
-    fundamentals: FundamentalsSchema | None
+    fundamentals: Optional[FundamentalsSchema]

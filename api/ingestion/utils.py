@@ -3,17 +3,17 @@
 import math
 import time
 from datetime import datetime, timedelta
-from typing import Callable
+from typing import Callable, Optional
 
 import pandas as pd
 
 from ingestion.db import get_session, upsert_price, upsert_financials
 
 
-def safe_float(val) -> float | None:
+def safe_float(val) -> Optional[float]:
     try:
         v = float(val)
-        return None if math.isnan(v) else v
+        return None if math.isnan(v) else float(v)
     except (TypeError, ValueError):
         return None
 
@@ -23,10 +23,10 @@ def store_prices(session, asset_id: int, df, precision: int = 4) -> int:
     for dt, row in df.iterrows():
         upsert_price(
             session, asset_id, dt.date(),
-            round(row["Open"], precision) if pd.notna(row["Open"]) else None,
-            round(row["High"], precision) if pd.notna(row["High"]) else None,
-            round(row["Low"], precision) if pd.notna(row["Low"]) else None,
-            round(row["Close"], precision) if pd.notna(row["Close"]) else None,
+            float(round(row["Open"], precision)) if pd.notna(row["Open"]) else None,
+            float(round(row["High"], precision)) if pd.notna(row["High"]) else None,
+            float(round(row["Low"], precision)) if pd.notna(row["Low"]) else None,
+            float(round(row["Close"], precision)) if pd.notna(row["Close"]) else None,
             int(row["Volume"]) if pd.notna(row["Volume"]) else None,
         )
         count += 1
