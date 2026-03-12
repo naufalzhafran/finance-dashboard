@@ -28,6 +28,7 @@ import StrategyCard from "@/components/StrategyCard";
 import { analyzeStock } from "@/lib/strategy";
 import { Asset, FundamentalData, PriceData } from "@/types";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   calculateSMA,
   calculateRSI,
@@ -403,9 +404,18 @@ export default function AssetDetail({
           loading={loading}
         />
 
-        <div className="space-y-8 animate-fade-in">
-          {/* Chart Section */}
-          <div>
+        <Tabs defaultValue="overview" className="space-y-8 animate-fade-in">
+          <TabsList className="w-full justify-start h-auto p-1 overflow-x-auto flex-nowrap">
+            <TabsTrigger value="overview" className="flex-shrink-0">Overview</TabsTrigger>
+            <TabsTrigger value="technical" className="flex-shrink-0">Technical</TabsTrigger>
+            <TabsTrigger value="risk" className="flex-shrink-0">Risk</TabsTrigger>
+            <TabsTrigger value="fundamentals" className="flex-shrink-0">Fundamentals</TabsTrigger>
+            <TabsTrigger value="financials" className="flex-shrink-0">Financials</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview">
+            {/* Chart Section */}
+            <div>
             {priceLoading ? (
               <Card className="h-[500px] flex items-center justify-center bg-card/80 border-border/50">
                 <div className="flex flex-col items-center gap-4">
@@ -450,6 +460,7 @@ export default function AssetDetail({
               />
             </div>
           )}
+          </TabsContent>
 
           {/* Technical Indicators Section - Only for Stocks */}
           {isStock &&
@@ -457,6 +468,7 @@ export default function AssetDetail({
             !priceLoading &&
             priceData.length > 0 && (
               <>
+                <TabsContent value="technical">
                 <div className="animate-fade-in">
                   <div className="flex items-center gap-2.5 mb-4">
                     <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent/10">
@@ -486,6 +498,7 @@ export default function AssetDetail({
                 <div className="animate-fade-in">
                   <MACDChart data={technicalData.chartData} />
                 </div>
+                </TabsContent>
               </>
             )}
 
@@ -495,6 +508,7 @@ export default function AssetDetail({
             !priceLoading &&
             priceData.length > 0 && (
               <>
+                <TabsContent value="risk">
                 <div className="animate-fade-in">
                   <div className="flex items-center gap-2.5 mb-4">
                     <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10">
@@ -530,12 +544,15 @@ export default function AssetDetail({
                     }
                   />
                 </div>
+                </TabsContent>
               </>
             )}
 
           {/* Fundamentals Section - Only for Stocks */}
           {isStock && selectedSymbol && (
-            <div className="animate-fade-in space-y-8">
+            <>
+              <TabsContent value="fundamentals">
+              <div className="animate-fade-in space-y-8">
               <div className="flex items-center gap-2.5 mb-4">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10">
                   <Landmark className="w-4.5 h-4.5 text-emerald-500" />
@@ -568,12 +585,15 @@ export default function AssetDetail({
                 loading={fundamentalsLoading}
                 currency={selectedAsset?.currency}
               />
-            </div>
+              </div>
+              </TabsContent>
+              </>
           )}
 
           {/* Financial Statements Section - Only for Stocks */}
           {isStock && selectedSymbol && (
-            <div className="animate-fade-in">
+            <>
+              <TabsContent value="financials">
               <div className="flex items-center gap-2.5 mb-4">
                 <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10">
                   <FileBarChart className="w-4.5 h-4.5 text-purple-500" />
@@ -584,9 +604,10 @@ export default function AssetDetail({
                 symbol={selectedSymbol}
                 currency={selectedAsset?.currency}
               />
-            </div>
+              </TabsContent>
+              </>
           )}
-        </div>
+        </Tabs>
       </main>
 
       {/* Footer */}
