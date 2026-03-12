@@ -1,19 +1,16 @@
-from __future__ import annotations
-
-from datetime import datetime
-from typing import Optional
+import datetime
 from pydantic import BaseModel
 
 
 class AssetSchema(BaseModel):
     id: int
     symbol: str
-    name: Optional[str]
+    name: str | None
     asset_type: str
     currency: str
-    yahoo_symbol: Optional[str] = None
+    yahoo_symbol: str | None = None
     tracked: bool = True
-    created_at: Optional[datetime] = None
+    created_at: datetime.datetime | None = None
 
     model_config = {"from_attributes": True}
 
