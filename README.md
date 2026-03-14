@@ -91,24 +91,90 @@ npm run dev
 
 ---
 
-## Docker Compose (all services)
+## Docker Compose — Deployment
+
+This is the recommended way to run the full stack in production.
+
+### 1. Configure environment
 
 ```bash
-docker compose up --build
+cp .env.example .env
+```
+
+Edit `.env` with your values:
+
+```env
+# PostgreSQL
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=yourpassword
+POSTGRES_DB=finance_db
+
+# FastAPI — use the postgres service name as the host
+DATABASE_URL=postgresql://postgres:yourpassword@postgres:5432/finance_db
+
+# Next.js — internal Docker network address of the API service
+API_URL=http://api:8000/api
+```
+
+> If you're running PostgreSQL outside Docker (e.g. a managed DB), set `DATABASE_URL` to point to that host instead and remove the `postgres` service from `docker-compose.yml`.
+
+### 2. Build and start all services
+
+```bash
+docker compose up --build -d
+```
+
+This starts three services: `postgres`, `api` (FastAPI on port 8000), and `web` (Next.js on port 3000). The API container automatically runs `alembic upgrade head` on startup before serving.
+
+### 3. Ingest initial data
+
+Run ingestion inside the running API container:
+
+```bash
+# Full historical load (first time)
+docker compose exec api uv run ingest idx
+docker compose exec api uv run ingest global
+
+# Or both with a short lookback (for subsequent runs / cron)
+docker compose exec api uv run ingest daily
+```
+
+### 4. Verify
+
+- Frontend: `http://localhost:3000`
+- API docs: `http://localhost:8000/docs`
+
+### Useful commands
+
+```bash
+docker compose logs -f api        # Stream API logs
+docker compose logs -f web        # Stream frontend logs
+docker compose restart api        # Restart a single service
+docker compose down               # Stop all services
+docker compose down -v            # Stop and delete volumes (wipes DB)
 ```
 
 ---
 
 ## Environment Variables
 
-### Backend (`api/.env`)
+### Root (`.env`) — used by Docker Compose
+
+```env
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+POSTGRES_DB=finance_db
+DATABASE_URL=postgresql://postgres:password@postgres:5432/finance_db
+API_URL=http://api:8000/api
+```
+
+### Backend (`api/.env`) — local development only
 
 ```env
 DATABASE_URL=postgresql://postgres:password@localhost:5432/finance_db
-ALLOWED_ORIGINS=http://localhost:3000
 ```
 
-### Frontend (`web/.env.local`)
+### Frontend (`web/.env.local`) — local development only
 
 ```env
 API_URL=http://localhost:8000/api
@@ -233,26 +299,3 @@ uv run ingest daily --start 2026-03-01 --end 2026-03-08
 ### Adding new tickers
 
 Use the dashboard at `/tickers`. Enter the Yahoo Finance symbol (e.g. `BBCA.JK`, `NVDA`, `GC=F`), select the asset type and currency, then click **Add**. Historical data is fetched automatically in the background.
-
----
-
-## Dashboard Sections
-
-### World View
-- Global Indices (IHSG, S&P 500, NASDAQ, Nikkei, FTSE, DAX, HSI, STI, KLSE)
-- IDR Exchange Rates (USD, EUR, GBP, JPY, SGD, AUD, HKD, CHF, CAD, NZD, KRW, MYR, THB)
-- Commodities (Gold, Silver, Platinum, Crude Oil, Natural Gas, Copper, Corn, Coffee, Palm Oil)
-- Crypto (BTC, ETH)
-
-### Indonesia
-- Banking (BBCA, BBRI, BMRI, BBNI, BRIS, and more)
-- Energy & Mining (ADRO, ITMG, PTBA, BYAN, MEDC, PGAS)
-- Metals & Minerals (ANTM, INCO, TINS, MDKA, NCKL, AMMN)
-- Consumer Goods (UNVR, ICBP, INDF, KLBF, MYOR)
-- Agriculture & Plantations (AALI, LSIP, SGRO, SIMP)
-- Infrastructure & Construction (JSMR, WIKA, PTPP, WSKT)
-- Property (BSDE, CTRA, SMRA, PWON)
-- Technology (BUKA, GOTO, EMTK, BREN)
-- Transportation & Logistics
-- Healthcare (KLBF, KAEF, MIKA, SILO)
-- Automotive & Heavy Equipment (ASII, AUTO, UNTR)
