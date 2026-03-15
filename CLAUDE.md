@@ -23,11 +23,18 @@ uv run uvicorn app.main:app --reload  # Dev server → http://localhost:8000/doc
 
 ### Data Ingestion
 ```bash
-uv run ingest idx                # IDX stocks (10-year historical)
-uv run ingest global             # Global assets (indices, FX, commodities, crypto)
-uv run ingest daily              # Both with 3-day lookback (for cron)
-uv run ingest idx --symbols BBCA.JK TLKM.JK  # Specific symbols
+uv run ingest                                      # All tracked assets (10-year historical)
+uv run ingest --days 3                             # All tracked assets (last 3 days, for cron)
+uv run ingest --symbols BBCA.JK TLKM.JK           # Specific symbols
+uv run ingest --years 1                            # 1 year of history
 ```
+
+> **Inside Docker container:** The container uses `pip`, not `uv`. Use `python -m` instead:
+> ```bash
+> docker compose exec api python -m ingestion.ingest
+> docker compose exec api python -m ingestion.ingest --days 3
+> docker compose exec api python -m ingestion.ingest --symbols BBCA.JK TLKM.JK
+> ```
 
 ### Frontend (`web/`)
 ```bash

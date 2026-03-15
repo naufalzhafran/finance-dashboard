@@ -62,19 +62,17 @@ uv run uvicorn app.main:app --reload
 
 ### 3. Run data ingestion
 
-All ingestion is handled by a single `ingest` command with subcommands:
-
 ```bash
 cd api
 
-# Ingest all IDX stocks (last 10 years)
-uv run ingest idx
+# Ingest all tracked assets (last 10 years)
+uv run ingest
 
-# Ingest all global assets (indices, FX, commodities, crypto)
-uv run ingest global
+# Ingest with a short lookback (for daily cron jobs)
+uv run ingest --days 3
 
-# Run both — default lookback: last 3 days (for daily cron jobs)
-uv run ingest daily
+# Specific symbols
+uv run ingest --symbols BBCA.JK TLKM.JK
 ```
 
 See [Ingestion CLI](#ingestion-cli) for the full reference.
@@ -132,12 +130,16 @@ Run ingestion inside the running API container:
 
 ```bash
 # Full historical load (first time)
-docker compose exec api uv run ingest idx
-docker compose exec api uv run ingest global
+docker compose exec api python -m ingestion.ingest
 
-# Or both with a short lookback (for subsequent runs / cron)
-docker compose exec api uv run ingest daily
+# Short lookback for subsequent runs
+docker compose exec api python -m ingestion.ingest --days 3
+
+# Specific symbols
+docker compose exec api python -m ingestion.ingest --symbols BBCA.JK TLKM.JK
 ```
+
+> The container uses `pip`, not `uv`, so use `python -m ingestion.ingest` instead of `uv run ingest`.
 
 ### 4. Verify
 
@@ -200,100 +202,38 @@ Full interactive docs available at `http://localhost:8000/docs`.
 
 ## Ingestion CLI
 
-The `ingest` command lives in `api/ingestion/ingest.py` and is installed as a script via `pyproject.toml`.
+The `ingest` command lives in `api/ingestion/ingest.py` and ingests all tracked assets from the database.
 
-### Subcommands
-
-#### `ingest idx` — Indonesian stocks
-
-```bash
-uv run ingest idx [OPTIONS]
-
+```
 Options:
-  --symbols SYMBOL [SYMBOL ...]   Specific symbols to ingest (default: all IDX stocks)
+  --symbols SYMBOL [SYMBOL ...]   Specific symbols to ingest (default: all tracked assets)
   --years N                       Years of history to fetch (default: 10)
   --start YYYY-MM-DD              Explicit start date (overrides --years)
   --end YYYY-MM-DD                End date (default: today)
-  --limit N                       Cap number of symbols (useful for testing)
+  --days N                        Lookback window in days (overrides --years)
   --delay SECONDS                 Sleep between requests (default: 0.5)
 ```
 
 Examples:
 ```bash
-# Full historical load for all stocks
-uv run ingest idx --years 10
+# Full historical load (all tracked assets, 10 years)
+uv run ingest
 
-# Single stock
-uv run ingest idx --symbols BBCA
+# Last 3 days only (for daily cron)
+uv run ingest --days 3
 
-# A few stocks, quick test
-uv run ingest idx --symbols BBCA BBRI BMRI --years 1
-
-# Custom date range
-uv run ingest idx --start 2024-01-01 --end 2024-12-31
-```
-
-#### `ingest global` — Global assets
-
-Fetches indices, FX rates, commodities, and crypto defined in `data/tickers.py`.
-
-```bash
-uv run ingest global [OPTIONS]
-
-Options:
-  --symbols SYMBOL [SYMBOL ...]   Specific symbols to ingest (default: all global assets)
-  --years N                       Years of history to fetch (default: 10)
-  --start YYYY-MM-DD              Explicit start date (overrides --years)
-  --end YYYY-MM-DD                End date (default: today)
-  --delay SECONDS                 Sleep between requests (default: 0.5)
-```
-
-Examples:
-```bash
-# Full historical load
-uv run ingest global --years 10
-
-# Just gold and S&P 500
-uv run ingest global --symbols "GC=F" "^GSPC"
+# Specific symbols
+uv run ingest --symbols BBCA.JK BBRI.JK
 
 # Custom date range
-uv run ingest global --start 2020-01-01
-```
-
-#### `ingest daily` — Run both (for cron jobs)
-
-```bash
-uv run ingest daily [OPTIONS]
-
-Options:
-  --days N            Lookback window in days (default: 3)
-  --start YYYY-MM-DD  Explicit start date (overrides --days)
-  --end YYYY-MM-DD    End date (default: today)
-  --skip-idx          Skip IDX stocks
-  --skip-global       Skip global assets
-  --delay SECONDS     Sleep between requests (default: 0.5)
-```
-
-Examples:
-```bash
-# Default daily run (last 3 days, both sources)
-uv run ingest daily
-
-# Wider window to catch missing data
-uv run ingest daily --days 7
-
-# Only global assets
-uv run ingest daily --skip-idx
-
-# Explicit range
-uv run ingest daily --start 2026-03-01 --end 2026-03-08
+uv run ingest --start 2024-01-01 --end 2024-12-31
 ```
 
 ### Scheduled daily runs (cron)
 
 ```cron
 # Run every weekday at 18:30 WIB (11:30 UTC)
-30 11 * * 1-5 cd /app && uv run ingest daily --days 3
+30 11 * * 1-5 docker compose -f /home/zhafran/finance-dashboard/docker-compose.yml exec -T api python -m ingestion.ingest --days 3
 ```
 
 ### Adding new tickers
