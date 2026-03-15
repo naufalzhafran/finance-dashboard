@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
+  // Required for Docker standalone deployment
+  output: "standalone",
+
   // Configure image optimization
   images: {
     formats: ["image/avif", "image/webp"],
