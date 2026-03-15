@@ -77,8 +77,9 @@ if [ ! -f "$SOURCE_DIR/.env" ]; then
     exit 1
 fi
 
-# Start Docker Compose
-echo -e "${YELLOW}🐳 Starting Docker Compose services...${NC}"
+# Start Docker Compose (take down first to ensure clean redeploy)
+echo -e "${YELLOW}🐳 Redeploying Docker Compose services...${NC}"
+sudo -u "$ORIGINAL_USER" docker compose down --remove-orphans
 sudo -u "$ORIGINAL_USER" docker compose up -d --build
 
 echo -e "${GREEN}✅ Docker services started${NC}"
