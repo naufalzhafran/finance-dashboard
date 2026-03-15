@@ -20,7 +20,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 export function getAssets(assetType?: string) {
   const qs = assetType ? `?asset_type=${encodeURIComponent(assetType)}` : "";
   return apiFetch<import("@/types").Asset[]>(`/assets${qs}`, {
-    next: { revalidate: 300 },
+    cache: "no-store",
   });
 }
 
@@ -93,4 +93,26 @@ export function removeTicker(symbol: string) {
   return apiFetch<{ detail: string }>(`/tickers/${encodeURIComponent(symbol)}`, {
     method: "DELETE",
   });
+}
+
+export function getGroups() {
+  return apiFetch<import("@/types").DashboardGroup[]>("/groups", { cache: "no-store" });
+}
+
+export function createGroup(data: import("@/types").DashboardGroupCreate) {
+  return apiFetch<import("@/types").DashboardGroup>("/groups", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateGroup(id: number, data: import("@/types").DashboardGroupUpdate) {
+  return apiFetch<import("@/types").DashboardGroup>(`/groups/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteGroup(id: number) {
+  return apiFetch<void>(`/groups/${id}`, { method: "DELETE" });
 }

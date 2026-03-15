@@ -92,6 +92,8 @@ def add_ticker(body: TickerCreate, background_tasks: BackgroundTasks, db: Sessio
         if existing.tracked:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                                 detail=f"'{symbol}' is already being tracked.")
+        # Validate with Yahoo Finance before re-enabling a previously untracked asset
+        _validate_and_fetch_info(yahoo_symbol)
         existing.tracked = True
         existing.yahoo_symbol = yahoo_symbol
         db.commit()

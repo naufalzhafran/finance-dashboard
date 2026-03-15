@@ -81,24 +81,24 @@ export default function MiniStockChart({
       }`}
       onClick={() => router.push(`/asset/${encodeURIComponent(symbol)}`)}
     >
-      <div className="flex justify-between items-start mb-2">
-        <div>
-          <h3 className="font-bold text-sm tracking-tight group-hover:text-primary transition-colors duration-200">
+      <div className="flex justify-between items-start gap-2 mb-2">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-sm tracking-tight group-hover:text-primary transition-colors duration-200 truncate">
             {symbol}
           </h3>
           <p
-            className="text-xs text-muted-foreground truncate max-w-[120px]"
+            className="text-xs text-muted-foreground truncate"
             title={name}
           >
             {name}
           </p>
         </div>
-        <div className="text-right">
-          <p className="font-mono text-sm font-semibold">
+        <div className="text-right shrink-0">
+          <p className="font-mono text-sm font-semibold whitespace-nowrap">
             {formatPrice(lastPrice)}
           </p>
           <p
-            className={`text-xs font-medium flex items-center justify-end gap-0.5 ${
+            className={`text-xs font-medium flex items-center justify-end gap-0.5 whitespace-nowrap ${
               isPositive ? "text-emerald-400" : "text-rose-400"
             }`}
           >

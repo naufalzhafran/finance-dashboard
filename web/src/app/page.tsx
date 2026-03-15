@@ -11,146 +11,40 @@ import {
   BarChart3,
   TrendingUp,
   TrendingDown,
-  Wheat,
   Cpu,
   Ship,
   ShoppingCart,
   HeartPulse,
   Factory,
   Leaf,
+  LucideIcon,
 } from "lucide-react";
 import MiniStockChart from "@/components/MiniStockChart";
 import DashboardControls from "@/components/DashboardControls";
 import ResponsiveHeader from "@/components/ResponsiveHeader";
-import { Asset, SimplePriceData, TimeRange } from "@/types";
+import { Asset, DashboardGroup, SimplePriceData, TimeRange } from "@/types";
 
-// ─── Dashboard Groups ──────────────────────────────────────────────────────────
-const DASHBOARD_GROUPS = [
-  // ── World View ────────────────────────────────────────────────────────────
-  {
-    section: "world",
-    title: "Global Indices",
-    icon: Globe,
-    color: "blue",
-    symbols: ["^JKSE", "^GSPC", "^IXIC", "^DJI", "^N225", "^FTSE", "^GDAXI", "^HSI", "^STI", "^KLSE"],
-  },
-  {
-    section: "world",
-    title: "IDR Exchange Rates",
-    icon: Banknote,
-    color: "amber",
-    symbols: ["USDIDR=X", "EURIDR=X", "GBPIDR=X", "JPYIDR=X", "SGDIDR=X", "AUDIDR=X", "CADIDR=X", "CHFIDR=X"],
-  },
-  {
-    section: "world",
-    title: "Commodities",
-    icon: Flame,
-    color: "orange",
-    symbols: ["GC=F", "SI=F", "CL=F", "BZ=F", "NG=F", "HG=F", "ZC=F", "ZS=F", "KC=F", "CPO=F"],
-  },
-  {
-    section: "world",
-    title: "Crypto",
-    icon: TrendingUp,
-    color: "purple",
-    symbols: ["BTC-USD", "ETH-USD"],
-  },
+// Map icon name strings (stored in DB) to Lucide components
+const ICON_MAP: Record<string, LucideIcon> = {
+  Globe, Banknote, Landmark, Flame, Building2, TrendingUp, TrendingDown,
+  Cpu, Ship, ShoppingCart, HeartPulse, Factory, Leaf, BarChart3,
+};
 
-  // ── Indonesia ─────────────────────────────────────────────────────────────
-  {
-    section: "indonesia",
-    title: "Banking",
-    icon: Landmark,
-    color: "emerald",
-    symbols: ["BBCA", "BBRI", "BMRI", "BBNI", "BRIS", "MEGA", "BTPN", "PNBN", "BNGA", "BJBR"],
-  },
-  {
-    section: "indonesia",
-    title: "Energy & Mining",
-    icon: Flame,
-    color: "orange",
-    symbols: ["ADRO", "ITMG", "PTBA", "BYAN", "HRUM", "GEMS", "MBAP", "UNTR", "MEDC", "PGAS"],
-  },
-  {
-    section: "indonesia",
-    title: "Metals & Minerals",
-    icon: Factory,
-    color: "slate",
-    symbols: ["ANTM", "INCO", "TINS", "MDKA", "NCKL", "AMMN", "CUAN", "BRMS"],
-  },
-  {
-    section: "indonesia",
-    title: "State-Owned Enterprises (BUMN)",
-    icon: Building2,
-    color: "red",
-    symbols: ["TLKM", "BBRI", "BMRI", "BBNI", "SMGR", "JSMR", "BBTN", "WIKA", "PTPP", "GIAA"],
-  },
-  {
-    section: "indonesia",
-    title: "Consumer Goods",
-    icon: ShoppingCart,
-    color: "pink",
-    symbols: ["UNVR", "ICBP", "INDF", "KLBF", "HMSP", "GGRM", "MYOR", "ULTJ", "SIDO", "MLBI"],
-  },
-  {
-    section: "indonesia",
-    title: "Agriculture & Plantations",
-    icon: Leaf,
-    color: "lime",
-    symbols: ["AALI", "LSIP", "SIMP", "SGRO", "DSNG", "BWPT", "SSMS", "PALM", "TAPG"],
-  },
-  {
-    section: "indonesia",
-    title: "Infrastructure & Construction",
-    icon: Building2,
-    color: "cyan",
-    symbols: ["JSMR", "WIKA", "WSKT", "PTPP", "ADHI", "TOTL", "WTON", "SSIA"],
-  },
-  {
-    section: "indonesia",
-    title: "Technology",
-    icon: Cpu,
-    color: "violet",
-    symbols: ["BUKA", "GOTO", "EMTK", "DCII", "MTDL", "DNET", "BREN"],
-  },
-  {
-    section: "indonesia",
-    title: "Transportation & Logistics",
-    icon: Ship,
-    color: "sky",
-    symbols: ["GIAA", "BIRD", "ASSA", "SMDR", "HITS", "PORT", "SHIP"],
-  },
-  {
-    section: "indonesia",
-    title: "Healthcare",
-    icon: HeartPulse,
-    color: "rose",
-    symbols: ["KLBF", "KAEF", "MIKA", "SILO", "HEAL", "TSPC", "DVLA", "PYFA"],
-  },
-  {
-    section: "indonesia",
-    title: "Automotive & Heavy Equipment",
-    icon: Factory,
-    color: "zinc",
-    symbols: ["ASII", "AUTO", "GJTL", "SMSM", "UNTR", "IMAS", "MPMX"],
-  },
-];
-
-const COLOR_MAP: Record<string, { icon: string; badge: string; dot: string }> = {
-  blue:    { icon: "text-blue-400",   badge: "bg-blue-500/10 text-blue-400 border-blue-500/20",   dot: "bg-blue-400" },
-  amber:   { icon: "text-amber-400",  badge: "bg-amber-500/10 text-amber-400 border-amber-500/20",  dot: "bg-amber-400" },
-  orange:  { icon: "text-orange-400", badge: "bg-orange-500/10 text-orange-400 border-orange-500/20", dot: "bg-orange-400" },
-  purple:  { icon: "text-purple-400", badge: "bg-purple-500/10 text-purple-400 border-purple-500/20", dot: "bg-purple-400" },
-  emerald: { icon: "text-emerald-400",badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",dot: "bg-emerald-400" },
-  slate:   { icon: "text-slate-400",  badge: "bg-slate-500/10 text-slate-400 border-slate-500/20",  dot: "bg-slate-400" },
-  red:     { icon: "text-red-400",    badge: "bg-red-500/10 text-red-400 border-red-500/20",    dot: "bg-red-400" },
-  pink:    { icon: "text-pink-400",   badge: "bg-pink-500/10 text-pink-400 border-pink-500/20",   dot: "bg-pink-400" },
-  lime:    { icon: "text-lime-400",   badge: "bg-lime-500/10 text-lime-400 border-lime-500/20",   dot: "bg-lime-400" },
-  cyan:    { icon: "text-cyan-400",   badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",   dot: "bg-cyan-400" },
-  violet:  { icon: "text-violet-400", badge: "bg-violet-500/10 text-violet-400 border-violet-500/20", dot: "bg-violet-400" },
-  sky:     { icon: "text-sky-400",    badge: "bg-sky-500/10 text-sky-400 border-sky-500/20",    dot: "bg-sky-400" },
-  rose:    { icon: "text-rose-400",   badge: "bg-rose-500/10 text-rose-400 border-rose-500/20",   dot: "bg-rose-400" },
-  zinc:    { icon: "text-zinc-400",   badge: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",   dot: "bg-zinc-400" },
+const COLOR_MAP: Record<string, { icon: string; badge: string }> = {
+  blue:    { icon: "text-blue-400",    badge: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
+  amber:   { icon: "text-amber-400",   badge: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+  orange:  { icon: "text-orange-400",  badge: "bg-orange-500/10 text-orange-400 border-orange-500/20" },
+  purple:  { icon: "text-purple-400",  badge: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
+  emerald: { icon: "text-emerald-400", badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
+  slate:   { icon: "text-slate-400",   badge: "bg-slate-500/10 text-slate-400 border-slate-500/20" },
+  red:     { icon: "text-red-400",     badge: "bg-red-500/10 text-red-400 border-red-500/20" },
+  pink:    { icon: "text-pink-400",    badge: "bg-pink-500/10 text-pink-400 border-pink-500/20" },
+  lime:    { icon: "text-lime-400",    badge: "bg-lime-500/10 text-lime-400 border-lime-500/20" },
+  cyan:    { icon: "text-cyan-400",    badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" },
+  violet:  { icon: "text-violet-400",  badge: "bg-violet-500/10 text-violet-400 border-violet-500/20" },
+  sky:     { icon: "text-sky-400",     badge: "bg-sky-500/10 text-sky-400 border-sky-500/20" },
+  rose:    { icon: "text-rose-400",    badge: "bg-rose-500/10 text-rose-400 border-rose-500/20" },
+  zinc:    { icon: "text-zinc-400",    badge: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20" },
 };
 
 function getStartDate(range: TimeRange): string {
@@ -167,25 +61,31 @@ function getStartDate(range: TimeRange): string {
 export default function Home() {
   const router = useRouter();
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [groups, setGroups] = useState<DashboardGroup[]>([]);
   const [marketData, setMarketData] = useState<Record<string, SimplePriceData[]>>({});
   const [loading, setLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<TimeRange>("3M");
   const [activeSection, setActiveSection] = useState<"all" | "world" | "indonesia">("all");
 
-  // Fetch assets
+  // Fetch assets and groups in parallel
   useEffect(() => {
-    fetch("/api/assets")
-      .then((r) => r.json())
-      .then((data: Asset[]) => setAssets(data))
+    Promise.all([
+      fetch("/api/assets").then((r) => r.json()),
+      fetch("/api/groups").then((r) => r.json()),
+    ])
+      .then(([assetData, groupData]: [Asset[], DashboardGroup[]]) => {
+        setAssets(assetData);
+        setGroups(groupData);
+      })
       .catch(console.error);
   }, []);
 
   // Fetch prices when assets or range changes
   useEffect(() => {
-    if (assets.length === 0) return;
+    if (assets.length === 0 || groups.length === 0) return;
     setLoading(true);
 
-    const symbolsToShow = new Set(DASHBOARD_GROUPS.flatMap((g) => g.symbols));
+    const symbolsToShow = new Set(groups.flatMap((g) => g.symbols));
     const available = assets.filter((a) => symbolsToShow.has(a.symbol)).map((a) => a.symbol);
     const end = new Date().toISOString().split("T")[0];
     const start = getStartDate(selectedRange);
@@ -207,9 +107,9 @@ export default function Home() {
       setMarketData(map);
       setLoading(false);
     });
-  }, [assets, selectedRange]);
+  }, [assets, groups, selectedRange]);
 
-  const filteredGroups = DASHBOARD_GROUPS.filter(
+  const filteredGroups = groups.filter(
     (g) => activeSection === "all" || g.section === activeSection,
   );
 
@@ -316,19 +216,18 @@ export default function Home() {
               );
               if (visibleSymbols.length === 0) return null;
 
-              const Icon = group.icon;
-              const colors = COLOR_MAP[group.color] || COLOR_MAP.blue;
+              const Icon = ICON_MAP[group.icon] ?? BarChart3;
+              const colors = COLOR_MAP[group.color] ?? COLOR_MAP.blue;
 
-              // Insert Indonesia label before first indonesia group when showing "all"
               const isFirstIndonesia =
                 activeSection === "all" &&
                 group.section === "indonesia" &&
                 filteredGroups.filter((g) => g.section === "indonesia")[0] === group;
 
               return (
-                <div key={group.title}>
+                <div key={group.id}>
                   {isFirstIndonesia && (
-                    <div className="flex items-center gap-4 mt-4 mb-0">
+                    <div className="flex items-center gap-4 mt-6 mb-4">
                       <div className="flex items-center gap-2">
                         <Building2 className="w-4 h-4 text-emerald-400" />
                         <span className="text-sm text-muted-foreground font-medium">Indonesia</span>
@@ -337,10 +236,10 @@ export default function Home() {
                     </div>
                   )}
                   <section
-                    className="animate-fade-in"
+                    className="animate-fade-in space-y-4"
                     style={{ animationDelay: `${groupIndex * 60}ms` }}
                   >
-                    <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-3">
                       <span className={`flex items-center justify-center w-7 h-7 rounded-lg border ${colors.badge}`}>
                         <Icon className={`w-4 h-4 ${colors.icon}`} />
                       </span>
@@ -351,7 +250,7 @@ export default function Home() {
                         {visibleSymbols.length}
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                       {visibleSymbols.map((symbol) => {
                         const asset = assets.find((a) => a.symbol === symbol);
                         return (

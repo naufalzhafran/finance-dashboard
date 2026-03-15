@@ -189,6 +189,42 @@ export interface FundamentalsResponse {
 // Technical Analysis Types
 // ============================================================================
 
+// ============================================================================
+// Dashboard Group Types
+// ============================================================================
+
+export interface DashboardGroup {
+  id: number;
+  section: string;
+  title: string;
+  icon: string;
+  color: string;
+  sort_order: number;
+  symbols: string[];
+}
+
+export interface DashboardGroupCreate {
+  section: string;
+  title: string;
+  icon: string;
+  color: string;
+  sort_order?: number;
+  symbols?: string[];
+}
+
+export interface DashboardGroupUpdate {
+  section?: string;
+  title?: string;
+  icon?: string;
+  color?: string;
+  sort_order?: number;
+  symbols?: string[];
+}
+
+// ============================================================================
+// Technical Analysis Types
+// ============================================================================
+
 export interface CrossoverSignal {
   date: string;
   type: "golden_cross" | "death_cross";
