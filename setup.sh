@@ -11,7 +11,7 @@ ORIGINAL_HOME=$(getent passwd "$ORIGINAL_USER" | cut -d: -f6)
 
 # Configuration
 DOMAIN="${1:-finance.madebynz.xyz}"
-SOURCE_DIR="${2:-$ORIGINAL_HOME/stock-analyze}"
+SOURCE_DIR="${2:-$ORIGINAL_HOME/finance-dashboard}"
 
 WEB_PORT=3000
 API_PORT=8000
