@@ -24,3 +24,8 @@ services:
       - "3000:3000"
     depends_on:
       - api
+
+networks:
+  default:
+    external: true
+    name: postgres-docker_default
