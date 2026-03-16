@@ -141,10 +141,6 @@ export default function Home() {
           <div className="px-6 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Live Data
-                </span>
                 <span className="text-xs text-muted-foreground">Yahoo Finance</span>
               </div>
               <h2 className="text-2xl font-bold tracking-tight">
