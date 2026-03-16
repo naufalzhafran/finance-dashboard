@@ -68,8 +68,23 @@ export default function MiniStockChart({
 
   if (data.length === 0) {
     return (
-      <Card className="p-4 h-32 flex items-center justify-center bg-card/80 border-border/50">
-        <span className="text-muted-foreground text-xs">No Data</span>
+      <Card
+        className="p-4 bg-card/80 border-border/50 cursor-pointer transition-all duration-300 hover:border-border group"
+        onClick={() => router.push(`/asset/${encodeURIComponent(symbol)}`)}
+      >
+        <div className="flex justify-between items-start gap-2 mb-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-sm tracking-tight group-hover:text-primary transition-colors duration-200 truncate">
+              {symbol}
+            </h3>
+            <p className="text-xs text-muted-foreground truncate" title={name}>
+              {name}
+            </p>
+          </div>
+        </div>
+        <div className="h-16 w-full flex items-center justify-center">
+          <span className="text-muted-foreground text-xs">No data available</span>
+        </div>
       </Card>
     );
   }

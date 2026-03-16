@@ -62,7 +62,7 @@ function toYahooSymbol(symbol: string, section: string): string {
 }
 
 function deriveAssetType(section: string): string {
-  return section === "indonesia" ? "IDX" : "global";
+  return section === "indonesia" ? "stock" : "stock";
 }
 
 function deriveCurrency(symbol: string, section: string): string {
@@ -472,11 +472,11 @@ export default function GroupsPage() {
             const isSeeding = seedingGroup === group.id;
 
             return (
-              <Card key={group.id} className="bg-card/80 border-border/50 overflow-hidden">
+              <Card key={group.id} className="bg-card/80 border-border/50 overflow-hidden cursor-pointer hover:bg-secondary/30 transition-colors" onClick={() => toggleExpand(group.id)}>
                 {/* Group Header Row */}
                 <div className="flex items-center gap-2 px-4 py-3">
                   {/* Reorder */}
-                  <div className="flex flex-col gap-0 shrink-0">
+                  <div className="flex flex-col gap-0 shrink-0" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => moveGroup(index, "up")}
                       disabled={index === 0}
@@ -494,10 +494,7 @@ export default function GroupsPage() {
                   </div>
 
                   {/* Icon + title */}
-                  <button
-                    onClick={() => toggleExpand(group.id)}
-                    className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
-                  >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
                     <span className={`flex items-center justify-center w-7 h-7 rounded-lg border shrink-0 ${colors.badge}`}>
                       <Icon className="w-4 h-4" />
                     </span>
@@ -515,10 +512,10 @@ export default function GroupsPage() {
                       </span>
                     )}
                     <ChevronRight className={`w-4 h-4 text-muted-foreground ml-auto shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
-                  </button>
+                  </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                     {missing.length > 0 && (
                       <button
                         onClick={() => seedMissing(group)}
@@ -547,7 +544,7 @@ export default function GroupsPage() {
 
                 {/* Expanded: symbol list + edit form */}
                 {isExpanded && (
-                  <div className="border-t border-border/50 px-4 py-3 space-y-3">
+                  <div className="border-t border-border/50 px-4 py-3 space-y-3" onClick={(e) => e.stopPropagation()}>
                     {isEditing ? (
                       <>
                         {/* Edit metadata */}

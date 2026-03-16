@@ -101,7 +101,7 @@ export default function AssetDetail({
   // Determine if it is a stock (vs index, currency, commodity, etc.)
   const selectedAsset = assets.find((a) => a.symbol === selectedSymbol);
   // Default to true if not found, to be safe, or check asset_type explicitly
-  const isStock = selectedAsset?.asset_type === "stock";
+  const isStock = ["stock", "IDX", "global"].includes(selectedAsset?.asset_type ?? "");
   const isIDRStock = selectedAsset?.currency === "IDR";
 
   // Calculate technical indicators from price data

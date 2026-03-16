@@ -18,6 +18,7 @@ import {
   Factory,
   Leaf,
   LucideIcon,
+  ChevronDown,
 } from "lucide-react";
 import MiniStockChart from "@/components/MiniStockChart";
 import DashboardControls from "@/components/DashboardControls";
@@ -66,6 +67,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<TimeRange>("3M");
   const [activeSection, setActiveSection] = useState<"all" | "world" | "indonesia">("all");
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(new Set());
+
+  const toggleGroup = (id: number) =>
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
 
   // Fetch assets and groups in parallel
   useEffect(() => {
@@ -236,10 +245,13 @@ export default function Home() {
                     </div>
                   )}
                   <section
-                    className="animate-fade-in space-y-4"
+                    className="animate-fade-in rounded-xl border border-border/50 bg-card/30 overflow-hidden"
                     style={{ animationDelay: `${groupIndex * 60}ms` }}
                   >
-                    <div className="flex items-center gap-3">
+                    <button
+                      className="flex items-center gap-3 w-full text-left cursor-pointer px-4 py-3 hover:bg-card/60 transition-colors duration-200"
+                      onClick={() => toggleGroup(group.id)}
+                    >
                       <span className={`flex items-center justify-center w-7 h-7 rounded-lg border ${colors.badge}`}>
                         <Icon className={`w-4 h-4 ${colors.icon}`} />
                       </span>
@@ -249,25 +261,32 @@ export default function Home() {
                       <span className={`text-xs px-2 py-0.5 rounded-full border ${colors.badge}`}>
                         {visibleSymbols.length}
                       </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
-                      {visibleSymbols.map((symbol) => {
-                        const asset = assets.find((a) => a.symbol === symbol);
-                        return (
-                          <div
-                            key={symbol}
-                            className={loading ? "opacity-50 transition-opacity" : "opacity-100 transition-opacity"}
-                          >
-                            <MiniStockChart
-                              symbol={symbol}
-                              name={asset?.name || symbol}
-                              data={marketData[symbol] || []}
-                              currency={asset?.currency}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
+                      <ChevronDown
+                        className={`w-4 h-4 text-muted-foreground ml-auto transition-transform duration-200 ${
+                          collapsedGroups.has(group.id) ? "-rotate-90" : ""
+                        }`}
+                      />
+                    </button>
+                    {!collapsedGroups.has(group.id) && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 px-4 pb-4">
+                        {visibleSymbols.map((symbol) => {
+                          const asset = assets.find((a) => a.symbol === symbol);
+                          return (
+                            <div
+                              key={symbol}
+                              className={loading ? "opacity-50 transition-opacity" : "opacity-100 transition-opacity"}
+                            >
+                              <MiniStockChart
+                                symbol={symbol}
+                                name={asset?.name || symbol}
+                                data={marketData[symbol] || []}
+                                currency={asset?.currency}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </section>
                 </div>
               );
